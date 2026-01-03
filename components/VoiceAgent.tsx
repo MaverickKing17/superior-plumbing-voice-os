@@ -17,6 +17,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+  const prevPersonaRef = useRef<Persona>(persona);
 
   // Helper functions for audio processing
   const decode = (base64: string) => {
@@ -58,6 +59,41 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       data: encode(new Uint8Array(int16.buffer)),
       mimeType: 'audio/pcm;rate=16000',
     };
+  };
+
+  const playTransitionSignal = (toPersona: Persona) => {
+    // 1. Spoken Announcement (Immediate feedback)
+    const announcement = toPersona === Persona.MIKE 
+      ? "Switching to Emergency Dispatch." 
+      : "Returning to Service Advisor.";
+    const utterance = new SpeechSynthesisUtterance(announcement);
+    utterance.rate = 1.1;
+    utterance.pitch = toPersona === Persona.MIKE ? 0.8 : 1.2;
+    window.speechSynthesis.speak(utterance);
+
+    // 2. Audio Chime (Synthesized)
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      // Low alert for Mike, bright alert for Sarah
+      osc.frequency.setValueAtTime(toPersona === Persona.MIKE ? 220 : 880, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(toPersona === Persona.MIKE ? 110 : 1760, audioCtx.currentTime + 0.5);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      gain.gain.setValueAtTime(0, audioCtx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.6);
+    } catch (e) {
+      console.warn("Audio Context chime failed", e);
+    }
   };
 
   const startSession = async () => {
@@ -173,12 +209,16 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   // Handle re-config when persona changes while active
   useEffect(() => {
-    if (isActive && sessionRef.current) {
+    if (isActive && prevPersonaRef.current !== persona) {
+      // Signify the switch with a greeting sound/phrase
+      playTransitionSignal(persona);
+      
       // Re-start to apply new system instruction if persona changes
       stopSession();
       startSession();
     }
-  }, [persona]);
+    prevPersonaRef.current = persona;
+  }, [persona, isActive]);
 
   const isEmergency = persona === Persona.MIKE;
 

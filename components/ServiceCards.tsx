@@ -3,6 +3,12 @@ import React from 'react';
 import { SERVICES } from '../constants';
 
 const ServiceCards: React.FC = () => {
+  const scrollToBook = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById('book');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {SERVICES.map((service, index) => (
@@ -15,7 +21,13 @@ const ServiceCards: React.FC = () => {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">{service.title}</h3>
           <p className="text-gray-600 text-sm leading-relaxed">{service.description}</p>
-          <a href="#" className="mt-4 inline-block text-blue-600 text-sm font-bold hover:underline">Explore more &rarr;</a>
+          <a 
+            href="#book" 
+            onClick={scrollToBook}
+            className="mt-4 inline-block text-blue-600 text-sm font-bold hover:underline transition-all"
+          >
+            Explore more &rarr;
+          </a>
         </div>
       ))}
     </div>

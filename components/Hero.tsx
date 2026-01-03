@@ -4,10 +4,18 @@ import { Persona } from '../types';
 
 interface HeroProps {
   persona: Persona;
+  onVoiceToggle: () => void;
+  isVoiceActive: boolean;
 }
 
-const Hero: React.FC<HeroProps> = ({ persona }) => {
+const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) => {
   const isEmergency = persona === Persona.MIKE;
+
+  const scrollToBook = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById('book');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <section className="relative overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
@@ -28,8 +36,11 @@ const Hero: React.FC<HeroProps> = ({ persona }) => {
                 Emergency detected. Mike is on-call. We guarantee a technician arrival within <span className="font-bold text-orange-600 underline">4 hours</span> for all plumbing and heating emergencies.
               </p>
               <div className="flex flex-wrap gap-4">
-                <button className="px-8 py-4 bg-orange-600 text-white rounded-xl font-black shadow-xl hover:bg-orange-700 transition-all flex items-center gap-2">
-                   <span>🚨</span> CALLING MIKE NOW...
+                <button 
+                  onClick={onVoiceToggle}
+                  className={`px-8 py-4 rounded-xl font-black shadow-xl transition-all flex items-center gap-2 transform active:scale-95 ${isVoiceActive ? 'bg-white text-orange-600 border-2 border-orange-600' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
+                >
+                   <span>🚨</span> {isVoiceActive ? 'AGENT IS LISTENING' : 'START EMERGENCY DISPATCH'}
                 </button>
               </div>
             </>
@@ -42,7 +53,10 @@ const Hero: React.FC<HeroProps> = ({ persona }) => {
                 Experience superior service with Sarah and our team. From high-efficiency heat pump rebates to complex plumbing repairs, we treat your home like our own.
               </p>
               <div className="flex flex-wrap gap-4">
-                <button className="px-8 py-4 bg-blue-700 text-white rounded-xl font-black shadow-xl hover:bg-blue-800 transition-all">
+                <button 
+                  onClick={scrollToBook}
+                  className="px-8 py-4 bg-blue-700 text-white rounded-xl font-black shadow-xl hover:bg-blue-800 transition-all transform active:scale-95"
+                >
                   REQUEST SERVICE
                 </button>
                 <div className="flex flex-col justify-center">
