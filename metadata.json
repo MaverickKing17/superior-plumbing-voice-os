@@ -1,0 +1,7 @@
+{
+  "name": "Superior Plumbing & Heating AI Voice Dispatch",
+  "description": "Enterprise-grade AI Voice Agent system for Superior Plumbing & Heating featuring Sarah for service/rebates and Mike for emergency dispatch with automated persona switching.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
