@@ -73,11 +73,11 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
               <div className={`absolute inset-0 rounded-full blur-3xl opacity-30 ${isEmergency ? 'bg-orange-600' : 'bg-blue-600'}`}></div>
               <img 
                 src={isEmergency 
-                  ? "https://picsum.photos/id/101/600/600" // Representative image
-                  : "https://picsum.photos/id/201/600/600"
+                  ? "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=600&h=600&auto=format&fit=crop" 
+                  : "https://i.ibb.co/H9jdpVW/hunyuan-image-3-0-b-Replace-the-current.png"
                 } 
                 alt="Pro Technician" 
-                className="relative z-10 w-80 h-80 object-cover rounded-3xl shadow-2xl border-4 border-white"
+                className="relative z-10 w-80 h-80 object-cover rounded-3xl shadow-2xl border-4 border-white transition-opacity duration-500"
               />
               <div className="absolute -bottom-4 -right-4 bg-white p-4 rounded-2xl shadow-lg border border-gray-100 z-20">
                  <p className="text-2xl font-black text-blue-900">15+</p>
