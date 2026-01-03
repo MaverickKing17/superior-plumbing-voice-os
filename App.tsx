@@ -6,6 +6,7 @@ import Hero from './components/Hero.tsx';
 import ServiceCards from './components/ServiceCards.tsx';
 import VoiceAgent from './components/VoiceAgent.tsx';
 import Transcript from './components/Transcript.tsx';
+import Footer from './components/Footer.tsx';
 
 const App: React.FC = () => {
   const [activePersona, setActivePersona] = useState<Persona>(Persona.SARAH);
@@ -121,19 +122,7 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-24 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-               <img src="https://picsum.photos/40/40?grayscale" alt="Logo" className="rounded opacity-50" />
-               <span className="font-bold text-gray-400 uppercase tracking-widest text-xs">SUPERIOR PLUMBING & HEATING</span>
-            </div>
-            <div className="text-gray-400 text-sm">
-              © 2025 Superior Plumbing & Heating. All rights reserved. 
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer persona={activePersona} />
     </div>
   );
 };

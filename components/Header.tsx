@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Persona } from '../types';
+import { Persona } from '../types.ts';
 
 interface HeaderProps {
   persona: Persona;
@@ -23,14 +23,16 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
         <div className="flex justify-between h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white text-2xl font-bold transition-colors ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}>
-                S
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl font-black transition-all duration-500 shadow-lg ${isEmergency ? 'bg-orange-600 shadow-orange-100' : 'bg-blue-700 shadow-blue-100'}`}>
+                <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current">
+                  <path d="M12 21c-4.418 0-8-3.582-8-8s8-11 8-11 8 6.582 8 11-3.582 8-8 8zm0-2c3.314 0 6-2.686 6-6 0-2.31-1.92-5.462-6-8.794-4.08 3.332-6 6.484-6 8.794 0 3.314 2.686 6 6 6z" />
+                </svg>
               </div>
               <div className="hidden sm:block">
                 <h1 className={`text-xl font-black uppercase tracking-tight ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
-                  Superior <span className="text-gray-500">Plumbing & Heating</span>
+                  Superior <span className="text-gray-500">Plumbing</span>
                 </h1>
-                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold -mt-1">Expert Service Since 2010</p>
+                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold -mt-1 leading-none">Professional Care Since 2010</p>
               </div>
             </div>
           </div>
