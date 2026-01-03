@@ -14,6 +14,7 @@ interface VoiceAgentProps {
 const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, onTranscription }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
@@ -63,7 +64,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   };
 
   const playTransitionSignal = (toPersona: Persona) => {
-    // 1. Spoken Announcement (Immediate feedback)
     const announcement = toPersona === Persona.MIKE 
       ? "Switching to Emergency Dispatch." 
       : "Returning to Service Advisor.";
@@ -72,24 +72,18 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     utterance.pitch = toPersona === Persona.MIKE ? 0.8 : 1.2;
     window.speechSynthesis.speak(utterance);
 
-    // 2. Audio Chime (Synthesized)
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      
       osc.type = 'sine';
-      // Low alert for Mike, bright alert for Sarah
       osc.frequency.setValueAtTime(toPersona === Persona.MIKE ? 220 : 880, audioCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(toPersona === Persona.MIKE ? 110 : 1760, audioCtx.currentTime + 0.5);
-      
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      
       gain.gain.setValueAtTime(0, audioCtx.currentTime);
       gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-      
       osc.start();
       osc.stop(audioCtx.currentTime + 0.6);
     } catch (e) {
@@ -103,7 +97,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextRef.current = outputCtx;
@@ -114,7 +107,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         callbacks: {
           onopen: () => {
-            console.log('Session opened');
             setIsConnecting(false);
             const source = inputCtx.createMediaStreamSource(stream);
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
@@ -127,7 +119,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Audio output
             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio) {
               const audioCtx = audioContextRef.current!;
@@ -146,7 +137,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               };
             }
 
-            // Interruptions
             if (message.serverContent?.interrupted) {
               sourcesRef.current.forEach(s => s.stop());
               sourcesRef.current.clear();
@@ -154,7 +144,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               setIsSpeaking(false);
             }
 
-            // Transcription
             if (message.serverContent?.inputTranscription) {
               onTranscription(message.serverContent.inputTranscription.text, 'user');
             }
@@ -167,7 +156,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             setIsConnecting(false);
           },
           onclose: () => {
-            console.log('Session closed');
             setIsConnecting(false);
             setIsSpeaking(false);
           }
@@ -215,26 +203,37 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     return () => stopSession();
   }, [isActive]);
 
-  // Handle re-config when persona changes while active
   useEffect(() => {
-    if (isActive && prevPersonaRef.current !== persona) {
-      // Signify the switch with a greeting sound/phrase
-      playTransitionSignal(persona);
-      
-      // Re-start to apply new system instruction if persona changes
-      stopSession();
-      startSession();
+    if (prevPersonaRef.current !== persona) {
+      setIsSwitching(true);
+      const timer = setTimeout(() => setIsSwitching(false), 800);
+      if (isActive) {
+        playTransitionSignal(persona);
+        stopSession();
+        startSession();
+      }
+      prevPersonaRef.current = persona;
+      return () => clearTimeout(timer);
     }
-    prevPersonaRef.current = persona;
   }, [persona, isActive]);
 
   const isEmergency = persona === Persona.MIKE;
 
   return (
-    <div className={`p-6 rounded-2xl shadow-xl transition-all duration-500 border-2 ${
+    <div className={`relative overflow-hidden p-6 rounded-2xl shadow-xl transition-all duration-500 border-2 ${
       isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-800 border-blue-600'
     } text-white`}>
-      <div className="flex items-center justify-between mb-6">
+      
+      {isSwitching && (
+        <>
+          <div className="absolute inset-0 bg-white opacity-20 pointer-events-none z-50 animate-pulse flash-overlay"></div>
+          <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none z-[60]">
+             <div className={`absolute top-0 left-0 right-0 h-1 ${isEmergency ? 'bg-orange-300' : 'bg-blue-300'} opacity-80 animate-[scan-line_0.8s_ease-in-out_infinite]`}></div>
+          </div>
+        </>
+      )}
+
+      <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
           <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
             <span className="relative flex h-3 w-3">
@@ -246,28 +245,45 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
           <p className="text-xs opacity-70 mt-1">AI Voice Dispatcher v3.1</p>
         </div>
         <div className="flex items-center gap-2">
-           {isSpeaking && (
-             <div className="flex items-center gap-0.5 h-4 px-2">
-               <div className="audio-bar" style={{ animationDelay: '0s' }}></div>
-               <div className="audio-bar" style={{ animationDelay: '0.15s' }}></div>
-               <div className="audio-bar" style={{ animationDelay: '0.3s' }}></div>
-               <div className="audio-bar" style={{ animationDelay: '0.45s' }}></div>
-             </div>
-           )}
-           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 transition-all ${isActive ? 'bg-green-500/20' : 'bg-white/10'} ${isSpeaking ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent animate-pulse' : ''}`}>
+           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 transition-all ${isActive ? 'bg-green-500/20' : 'bg-white/10'} ${isSpeaking ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isSwitching ? 'scale-125 rotate-12 bg-white text-gray-900' : ''}`}>
               {persona === Persona.SARAH ? 'S' : 'M'}
            </div>
         </div>
       </div>
 
-      <div className="flex flex-col items-center py-8">
+      <div className="flex flex-col items-center py-6 relative z-10">
+        
+        {/* Dynamic Wave Visualizer */}
+        <div className="h-12 flex items-center justify-center gap-1 mb-6">
+          {isSpeaking ? (
+            [...Array(15)].map((_, i) => {
+              const animClasses = ['animate-wave-sm', 'animate-wave-md', 'animate-wave-lg', 'animate-wave-md', 'animate-wave-sm'];
+              const animClass = animClasses[i % animClasses.length];
+              return (
+                <div 
+                  key={i}
+                  className={`${isEmergency ? 'visualizer-bar-mike' : 'visualizer-bar-sarah'} ${animClass}`}
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                ></div>
+              );
+            })
+          ) : (
+            [...Array(15)].map((_, i) => (
+              <div 
+                key={i}
+                className={`w-[3px] h-1 rounded-full opacity-20 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}
+              ></div>
+            ))
+          )}
+        </div>
+
         <div className={`relative mb-8 group cursor-pointer transition-transform active:scale-95 ${isActive ? 'scale-110' : ''}`} onClick={onToggle}>
            <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 ${
              isActive ? (isEmergency ? 'bg-white/40' : 'bg-blue-400/50') : 'bg-black/20'
            } ${isSpeaking ? 'scale-125 opacity-60 bg-white' : ''}`}></div>
            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 ${
              isActive ? 'bg-white text-blue-900 shadow-2xl' : 'bg-white/20 text-white border-2 border-white/40'
-           } ${isSpeaking ? 'ring-4 ring-white/50 animate-pulse' : ''}`}>
+           } ${isSpeaking ? 'ring-4 ring-white/50 animate-pulse' : ''} ${isSwitching ? 'blur-[1px] brightness-150' : ''}`}>
              {isConnecting ? (
                <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
              ) : (
@@ -281,7 +297,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
              )}
            </div>
         </div>
-        <p className="text-sm font-bold tracking-widest uppercase mb-1">
+        <p className={`text-sm font-bold tracking-widest uppercase mb-1 transition-opacity ${isSwitching ? 'opacity-0' : 'opacity-100'}`}>
           {isActive ? (isConnecting ? 'CONNECTING...' : (isSpeaking ? 'AGENT SPEAKING...' : 'LISTENING')) : 'START VOICE CONSOLE'}
         </p>
         <p className="text-[10px] opacity-60 text-center px-4">
@@ -289,7 +305,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         </p>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-bold opacity-70">
+      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-bold opacity-70 relative z-10">
          <span>LATENCY: 240MS</span>
          <span>SECURE ENCRYPTED LINE</span>
       </div>

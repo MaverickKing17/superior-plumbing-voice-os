@@ -23,16 +23,39 @@
       .transition-all {
         transition: all 0.5s ease-in-out;
       }
-      @keyframes audio-wave {
-        0%, 100% { height: 4px; opacity: 0.5; }
-        50% { height: 16px; opacity: 1; }
+      
+      /* Base Wave Animations */
+      @keyframes wave-quiet {
+        0%, 100% { height: 4px; opacity: 0.4; }
+        50% { height: 10px; opacity: 0.7; }
       }
-      .audio-bar {
+      @keyframes wave-normal {
+        0%, 100% { height: 6px; opacity: 0.5; }
+        50% { height: 22px; opacity: 1; }
+      }
+      @keyframes wave-loud {
+        0%, 100% { height: 4px; opacity: 0.6; }
+        50% { height: 32px; opacity: 1; }
+      }
+
+      /* Sarah's calm wave */
+      .visualizer-bar-sarah {
         width: 3px;
-        background-color: white;
+        background-color: #93c5fd; /* blue-300 */
         border-radius: 2px;
-        animation: audio-wave 0.8s ease-in-out infinite;
       }
+      
+      /* Mike's urgent wave */
+      .visualizer-bar-mike {
+        width: 3px;
+        background-color: #fdba74; /* orange-300 */
+        border-radius: 2px;
+      }
+
+      .animate-wave-sm { animation: wave-quiet 0.8s ease-in-out infinite; }
+      .animate-wave-md { animation: wave-normal 0.6s ease-in-out infinite; }
+      .animate-wave-lg { animation: wave-loud 0.5s ease-in-out infinite; }
+
       @keyframes message-slide-up {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -47,6 +70,12 @@
       }
       .animate-live {
         animation: live-pulse 2s infinite;
+      }
+      @keyframes scan-line {
+        0% { transform: translateY(0); opacity: 0; }
+        20% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { transform: translateY(280px); opacity: 0; }
       }
     </style>
   <script type="importmap">
