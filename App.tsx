@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Persona, Message } from './types';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import ServiceCards from './components/ServiceCards';
-import VoiceAgent from './components/VoiceAgent';
-import Transcript from './components/Transcript';
+import { Persona, Message } from './types.ts';
+import Header from './components/Header.tsx';
+import Hero from './components/Hero.tsx';
+import ServiceCards from './components/ServiceCards.tsx';
+import VoiceAgent from './components/VoiceAgent.tsx';
+import Transcript from './components/Transcript.tsx';
 
 const App: React.FC = () => {
   const [activePersona, setActivePersona] = useState<Persona>(Persona.SARAH);

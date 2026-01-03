@@ -1,8 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import { Persona } from '../types';
-import { SYSTEM_INSTRUCTIONS } from '../constants';
+import { Persona } from '../types.ts';
+import { SYSTEM_INSTRUCTIONS } from '../constants.tsx';
 
 interface VoiceAgentProps {
   persona: Persona;
