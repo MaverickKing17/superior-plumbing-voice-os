@@ -9,6 +9,28 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ persona }) => {
   const isEmergency = persona === Persona.MIKE;
 
+  const handleScroll = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Special case for top
+    if (id === '#top' || id === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.history.pushState(null, '', '/');
+      return;
+    }
+
+    const targetId = id.replace('#', '');
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      // Update URL without jump
+      window.history.pushState(null, '', id);
+    } else {
+      console.warn(`Element with id ${targetId} not found.`);
+      // Fallback to top if target missing
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const LogoIcon = () => (
     <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xl transition-all duration-500 shadow-lg ${isEmergency ? 'bg-orange-600 shadow-orange-200' : 'bg-blue-700 shadow-blue-200'}`}>
       <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
@@ -26,10 +48,10 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand Column */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={handleScroll('#top')}>
               <LogoIcon />
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
+                <h3 className={`text-lg font-black uppercase tracking-tight group-hover:opacity-80 transition-opacity ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
                   Superior <span className="text-gray-400">Plumbing</span>
                 </h3>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Professional Care Since 2010</p>
@@ -40,13 +62,13 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             </p>
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-xs">FB</span>
+                <span className="text-[10px] font-bold">FB</span>
               </div>
               <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-xs">IG</span>
+                <span className="text-[10px] font-bold">IG</span>
               </div>
               <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-xs">IN</span>
+                <span className="text-[10px] font-bold">IN</span>
               </div>
             </div>
           </div>
@@ -55,11 +77,11 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
           <div>
             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Our Services</h4>
             <ul className="space-y-4 text-sm font-medium text-gray-500">
-              <li><a href="#services" className="hover:text-blue-600 transition-colors">Emergency Repair</a></li>
-              <li><a href="#services" className="hover:text-blue-600 transition-colors">Heat Pump Installation</a></li>
-              <li><a href="#services" className="hover:text-blue-600 transition-colors">Drain Cleaning</a></li>
-              <li><a href="#services" className="hover:text-blue-600 transition-colors">Sewer Inspections</a></li>
-              <li><a href="#services" className="hover:text-blue-600 transition-colors">Furnace Maintenance</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Emergency Repair</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Heat Pump Installation</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Drain Cleaning</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Sewer Inspections</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Furnace Maintenance</a></li>
             </ul>
           </div>
 
@@ -67,11 +89,11 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
           <div>
             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Homeowner Support</h4>
             <ul className="space-y-4 text-sm font-medium text-gray-500">
-              <li><a href="#rebates" className="hover:text-blue-600 transition-colors">HRS Rebate Guide</a></li>
-              <li><a href="#areas" className="hover:text-blue-600 transition-colors">Service Locations</a></li>
-              <li><a href="#book" className="hover:text-blue-600 transition-colors">Schedule Service</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Financing Options</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a></li>
+              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-600 transition-colors block">HRS Rebate Guide</a></li>
+              <li><a href="#areas" onClick={handleScroll('#areas')} className="hover:text-blue-600 transition-colors block">Service Locations</a></li>
+              <li><a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-600 transition-colors block">Schedule Service</a></li>
+              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-600 transition-colors block">Financing Options</a></li>
+              <li><a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-600 transition-colors block">Privacy Policy</a></li>
             </ul>
           </div>
 
@@ -84,9 +106,9 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
               <p className="text-[10px] text-gray-400 font-bold uppercase">Average response: 18 mins</p>
             </div>
             <div className="flex items-center gap-3 grayscale opacity-60">
-               <img src="https://picsum.photos/40/40?sig=1" alt="BBB" className="h-8 w-auto rounded" />
-               <img src="https://picsum.photos/40/40?sig=2" alt="HomeStars" className="h-8 w-auto rounded" />
-               <img src="https://picsum.photos/40/40?sig=3" alt="Google Review" className="h-8 w-auto rounded" />
+               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">BBB</div>
+               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">GReview</div>
+               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">SafeWork</div>
             </div>
           </div>
         </div>
@@ -95,9 +117,9 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest">
           <p>© 2025 Superior Plumbing & Heating Ltd. Licensed & Bonded.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-blue-600 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-blue-600 transition-colors">Careers</a>
-            <a href="#" className="hover:text-blue-600 transition-colors">Contractor ID: #SPH-2025-01</a>
+            <a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-600 transition-colors">Terms of Service</a>
+            <a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-600 transition-colors">Careers</a>
+            <span className="text-gray-300 select-none">Contractor ID: #SPH-2025-01</span>
           </div>
         </div>
       </div>

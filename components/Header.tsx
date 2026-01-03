@@ -11,9 +11,15 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.history.pushState(null, '', '/');
+      return;
+    }
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', `#${id}`);
     }
   };
 
@@ -22,8 +28,11 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl font-black transition-all duration-500 shadow-lg ${isEmergency ? 'bg-orange-600 shadow-orange-100' : 'bg-blue-700 shadow-blue-100'}`}>
+            <div 
+              className="flex-shrink-0 flex items-center gap-3 cursor-pointer group" 
+              onClick={scrollToSection('top')}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white text-2xl font-black transition-all duration-500 shadow-lg group-hover:scale-105 ${isEmergency ? 'bg-orange-600 shadow-orange-100' : 'bg-blue-700 shadow-blue-100'}`}>
                 <svg viewBox="0 0 24 24" className="w-8 h-8 fill-current">
                   <path d="M12 21c-4.418 0-8-3.582-8-8s8-11 8-11 8 6.582 8 11-3.582 8-8 8zm0-2c3.314 0 6-2.686 6-6 0-2.31-1.92-5.462-6-8.794-4.08 3.332-6 6.484-6 8.794 0 3.314 2.686 6 6 6z" />
                 </svg>
