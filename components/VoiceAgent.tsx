@@ -13,6 +13,7 @@ interface VoiceAgentProps {
 
 const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, onTranscription }) => {
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const nextStartTimeRef = useRef<number>(0);
@@ -138,7 +139,11 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               source.start(nextStartTimeRef.current);
               nextStartTimeRef.current += audioBuffer.duration;
               sourcesRef.current.add(source);
-              source.onended = () => sourcesRef.current.delete(source);
+              setIsSpeaking(true);
+              source.onended = () => {
+                sourcesRef.current.delete(source);
+                setIsSpeaking(sourcesRef.current.size > 0);
+              };
             }
 
             // Interruptions
@@ -146,6 +151,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               sourcesRef.current.forEach(s => s.stop());
               sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
+              setIsSpeaking(false);
             }
 
             // Transcription
@@ -163,6 +169,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
           onclose: () => {
             console.log('Session closed');
             setIsConnecting(false);
+            setIsSpeaking(false);
           }
         },
         config: {
@@ -196,6 +203,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
+    setIsSpeaking(false);
   };
 
   useEffect(() => {
@@ -237,8 +245,16 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
           </h3>
           <p className="text-xs opacity-70 mt-1">AI Voice Dispatcher v3.1</p>
         </div>
-        <div className="flex gap-2">
-           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 ${isActive ? 'bg-green-500/20' : 'bg-white/10'}`}>
+        <div className="flex items-center gap-2">
+           {isSpeaking && (
+             <div className="flex items-center gap-0.5 h-4 px-2">
+               <div className="audio-bar" style={{ animationDelay: '0s' }}></div>
+               <div className="audio-bar" style={{ animationDelay: '0.15s' }}></div>
+               <div className="audio-bar" style={{ animationDelay: '0.3s' }}></div>
+               <div className="audio-bar" style={{ animationDelay: '0.45s' }}></div>
+             </div>
+           )}
+           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 transition-all ${isActive ? 'bg-green-500/20' : 'bg-white/10'} ${isSpeaking ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent animate-pulse' : ''}`}>
               {persona === Persona.SARAH ? 'S' : 'M'}
            </div>
         </div>
@@ -248,10 +264,10 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         <div className={`relative mb-8 group cursor-pointer transition-transform active:scale-95 ${isActive ? 'scale-110' : ''}`} onClick={onToggle}>
            <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 ${
              isActive ? (isEmergency ? 'bg-white/40' : 'bg-blue-400/50') : 'bg-black/20'
-           }`}></div>
+           } ${isSpeaking ? 'scale-125 opacity-60 bg-white' : ''}`}></div>
            <div className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 ${
              isActive ? 'bg-white text-blue-900 shadow-2xl' : 'bg-white/20 text-white border-2 border-white/40'
-           }`}>
+           } ${isSpeaking ? 'ring-4 ring-white/50 animate-pulse' : ''}`}>
              {isConnecting ? (
                <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
              ) : (
@@ -266,7 +282,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
            </div>
         </div>
         <p className="text-sm font-bold tracking-widest uppercase mb-1">
-          {isActive ? (isConnecting ? 'CONNECTING...' : 'LISTENING') : 'START VOICE CONSOLE'}
+          {isActive ? (isConnecting ? 'CONNECTING...' : (isSpeaking ? 'AGENT SPEAKING...' : 'LISTENING')) : 'START VOICE CONSOLE'}
         </p>
         <p className="text-[10px] opacity-60 text-center px-4">
           Speak to {isEmergency ? 'Mike' : 'Sarah'} directly about your issue.

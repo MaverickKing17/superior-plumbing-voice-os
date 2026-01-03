@@ -23,6 +23,16 @@
       .transition-all {
         transition: all 0.5s ease-in-out;
       }
+      @keyframes audio-wave {
+        0%, 100% { height: 4px; opacity: 0.5; }
+        50% { height: 16px; opacity: 1; }
+      }
+      .audio-bar {
+        width: 3px;
+        background-color: white;
+        border-radius: 2px;
+        animation: audio-wave 0.8s ease-in-out infinite;
+      }
     </style>
   <script type="importmap">
 {
