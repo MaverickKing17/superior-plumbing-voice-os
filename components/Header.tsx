@@ -72,8 +72,8 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
             </div>
             <div className="flex flex-col items-end">
               <p className="text-xs text-gray-400 font-bold uppercase">Order a Specialist</p>
-              <a href="tel:18669349139" className={`text-xl font-bold transition-colors ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
-                (866) 934-9139
+              <a href="tel:18669322818" className={`text-xl font-bold transition-colors ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
+                (866) 932-2818
               </a>
             </div>
             <button 

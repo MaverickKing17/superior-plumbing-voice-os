@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Persona } from '../types';
+import { Persona } from '../types.ts';
 
 interface HeroProps {
   persona: Persona;
@@ -24,40 +24,40 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[400px]">
         <div className="p-8 md:p-12 space-y-6">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold uppercase tracking-wider mb-2">
-            ✅ Licensed & Bonded Professionals
+            ✅ Superior Performance Guaranteed
           </div>
           
           {isEmergency ? (
             <>
               <h2 className="text-4xl md:text-5xl font-black text-orange-900 leading-tight">
-                URGENT DISPATCH <br/> <span className="text-orange-600">IN PROGRESS</span>
+                EMERGENCY DISPATCH <br/> <span className="text-orange-600">IS LIVE</span>
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Emergency detected. Mike is on-call. We guarantee a technician arrival within <span className="font-bold text-orange-600 underline">4 hours</span> for all plumbing and heating emergencies.
+                Emergency triage active. Mike is standing by to route an elite technician to your GTA address within <span className="font-bold text-orange-600 underline">4 hours</span>.
               </p>
               <div className="flex flex-wrap gap-4">
                 <button 
                   onClick={onVoiceToggle}
                   className={`px-8 py-4 rounded-xl font-black shadow-xl transition-all flex items-center gap-2 transform active:scale-95 ${isVoiceActive ? 'bg-white text-orange-600 border-2 border-orange-600' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
                 >
-                   <span>🚨</span> {isVoiceActive ? 'AGENT IS LISTENING' : 'START EMERGENCY DISPATCH'}
+                   <span>🚨</span> {isVoiceActive ? 'DISPATCHER LISTENING' : 'SPEAK TO DISPATCH'}
                 </button>
               </div>
             </>
           ) : (
             <>
               <h2 className="text-4xl md:text-5xl font-black text-blue-900 leading-tight">
-                YOUR LOCAL <br/> <span className="text-blue-700">PLUMBING EXPERTS</span>
+                MEET MELISSA <br/> <span className="text-blue-700">YOUR HOME ADVISOR</span>
               </h2>
               <p className="text-gray-600 text-lg leading-relaxed">
-                Experience superior service with Sarah and our team. From high-efficiency heat pump rebates to complex plumbing repairs, we treat your home like our own.
+                Expert support for plumbing repairs, HVAC installations, and Ontario HRS rebates. We handle your home maintenance so you don't have to.
               </p>
               <div className="flex flex-wrap gap-4">
                 <button 
-                  onClick={scrollToBook}
-                  className="px-8 py-4 bg-blue-700 text-white rounded-xl font-black shadow-xl hover:bg-blue-800 transition-all transform active:scale-95"
+                  onClick={onVoiceToggle}
+                  className={`px-8 py-4 rounded-xl font-black shadow-xl transition-all flex items-center gap-2 transform active:scale-95 ${isVoiceActive ? 'bg-white text-blue-700 border-2 border-blue-700' : 'bg-blue-700 text-white hover:bg-blue-800'}`}
                 >
-                  REQUEST SERVICE
+                  <span>🎙️</span> {isVoiceActive ? 'MELISSA IS LISTENING' : 'START VOICE INQUIRY'}
                 </button>
                 <div className="flex flex-col justify-center">
                    <p className="text-xs font-bold text-gray-400 uppercase">Save up to</p>
@@ -70,18 +70,18 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
         
         <div className="hidden md:flex justify-center p-8">
            <div className="relative">
-              <div className={`absolute inset-0 rounded-full blur-3xl opacity-30 ${isEmergency ? 'bg-orange-600' : 'bg-blue-600'}`}></div>
+              <div className={`absolute inset-0 rounded-full blur-3xl opacity-30 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
               <img 
                 src={isEmergency 
                   ? "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=600&h=600&auto=format&fit=crop" 
-                  : "https://i.ibb.co/H9jdpVW/hunyuan-image-3-0-b-Replace-the-current.png"
+                  : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&h=600&auto=format&fit=crop"
                 } 
-                alt="Pro Technician" 
+                alt="Elite Advisor" 
                 className="relative z-10 w-80 h-80 object-cover rounded-3xl shadow-2xl border-4 border-white transition-opacity duration-500"
               />
               <div className="absolute -bottom-4 -right-4 bg-white p-4 rounded-2xl shadow-lg border border-gray-100 z-20">
-                 <p className="text-2xl font-black text-blue-900">15+</p>
-                 <p className="text-[10px] font-bold text-gray-400 uppercase">Years Experience</p>
+                 <p className="text-2xl font-black text-blue-900">2026</p>
+                 <p className="text-[10px] font-bold text-gray-400 uppercase">Compliant Solutions</p>
               </div>
            </div>
         </div>

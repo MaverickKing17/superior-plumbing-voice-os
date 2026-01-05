@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SERVICES } from '../constants';
+import { SERVICES } from '../constants.tsx';
 
 const ServiceCards: React.FC = () => {
   const scrollToBook = (e: React.MouseEvent) => {

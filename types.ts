@@ -1,6 +1,6 @@
 
 export enum Persona {
-  SARAH = 'SARAH',
+  MELISSA = 'MELISSA',
   MIKE = 'MIKE'
 }
 

@@ -25,8 +25,6 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
       // Update URL without jump
       window.history.pushState(null, '', id);
     } else {
-      console.warn(`Element with id ${targetId} not found.`);
-      // Fallback to top if target missing
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -60,6 +58,9 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
               Providing elite HVAC and plumbing solutions across the GTA with a 100% satisfaction guarantee and 4-hour emergency response.
             </p>
+            <div className="text-[10px] font-bold text-gray-400">
+               TSSA License No: 000394817
+            </div>
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
                 <span className="text-[10px] font-bold">FB</span>
@@ -102,8 +103,12 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Direct Dispatch</h4>
             <div className={`p-4 rounded-2xl border flex flex-col gap-2 transition-colors duration-500 ${isEmergency ? 'bg-orange-50 border-orange-100' : 'bg-blue-50 border-blue-100'}`}>
               <span className={`text-[10px] font-black uppercase tracking-widest ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>Emergency HotLine</span>
-              <a href="tel:18669349139" className={`text-xl font-black ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>(866) 934-9139</a>
+              <a href="tel:18669322818" className={`text-xl font-black ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>(866) 932-2818</a>
               <p className="text-[10px] text-gray-400 font-bold uppercase">Average response: 18 mins</p>
+            </div>
+            <div className="text-[10px] text-gray-500 leading-tight">
+               4020A Sladeview Crescent Unit 6,<br/>
+               Mississauga, ON L5L 6B1, Canada
             </div>
             <div className="flex items-center gap-3 grayscale opacity-60">
                <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">BBB</div>

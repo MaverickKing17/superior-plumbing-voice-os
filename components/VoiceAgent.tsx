@@ -21,7 +21,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const prevPersonaRef = useRef<Persona>(persona);
 
-  // Helper functions for audio processing
   const decode = (base64: string) => {
     const binaryString = atob(base64);
     const bytes = new Uint8Array(binaryString.length);
@@ -65,30 +64,11 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   const playTransitionSignal = (toPersona: Persona) => {
     const announcement = toPersona === Persona.MIKE 
-      ? "Switching to Emergency Dispatch." 
-      : "Returning to Service Advisor.";
+      ? "Switching to Emergency Dispatch Mode." 
+      : "Transferring to Melissa, Home Comfort Advisor.";
     const utterance = new SpeechSynthesisUtterance(announcement);
     utterance.rate = 1.1;
-    utterance.pitch = toPersona === Persona.MIKE ? 0.8 : 1.2;
     window.speechSynthesis.speak(utterance);
-
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(toPersona === Persona.MIKE ? 220 : 880, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(toPersona === Persona.MIKE ? 110 : 1760, audioCtx.currentTime + 0.5);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      gain.gain.setValueAtTime(0, audioCtx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.6);
-    } catch (e) {
-      console.warn("Audio Context chime failed", e);
-    }
   };
 
   const startSession = async () => {
@@ -137,13 +117,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               };
             }
 
-            if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => s.stop());
-              sourcesRef.current.clear();
-              nextStartTimeRef.current = 0;
-              setIsSpeaking(false);
-            }
-
             if (message.serverContent?.inputTranscription) {
               onTranscription(message.serverContent.inputTranscription.text, 'user');
             }
@@ -166,7 +139,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
           speechConfig: {
             voiceConfig: {
               prebuiltVoiceConfig: { 
-                voiceName: persona === Persona.SARAH ? 'Kore' : 'Fenrir' 
+                voiceName: persona === Persona.MELISSA ? 'Kore' : 'Fenrir' 
               }
             }
           },
@@ -224,15 +197,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-800 border-blue-600'
     } text-white`}>
       
-      {isSwitching && (
-        <>
-          <div className="absolute inset-0 bg-white opacity-20 pointer-events-none z-50 animate-pulse flash-overlay"></div>
-          <div className="absolute top-0 left-0 right-0 h-full w-full pointer-events-none z-[60]">
-             <div className={`absolute top-0 left-0 right-0 h-1 ${isEmergency ? 'bg-orange-300' : 'bg-blue-300'} opacity-80 animate-[scan-line_0.8s_ease-in-out_infinite]`}></div>
-          </div>
-        </>
-      )}
-
       <div className="flex items-center justify-between mb-6 relative z-10">
         <div>
           <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
@@ -240,74 +204,43 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isActive ? 'bg-green-400' : 'bg-red-400'}`}></span>
               <span className={`relative inline-flex rounded-full h-3 w-3 ${isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
             </span>
-            {isEmergency ? 'Emergency Mode' : 'Superior Support'}
+            {isEmergency ? 'Mike (Dispatch)' : 'Melissa (Advisor)'}
           </h3>
-          <p className="text-xs opacity-70 mt-1">AI Voice Dispatcher v3.1</p>
+          <p className="text-xs opacity-70 mt-1 uppercase tracking-tighter">Verified Enterprise AI Line</p>
         </div>
-        <div className="flex items-center gap-2">
-           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 transition-all ${isActive ? 'bg-green-500/20' : 'bg-white/10'} ${isSpeaking ? 'ring-2 ring-white ring-offset-2 ring-offset-transparent' : ''} ${isSwitching ? 'scale-125 rotate-12 bg-white text-gray-900' : ''}`}>
-              {persona === Persona.SARAH ? 'S' : 'M'}
-           </div>
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-white/20 transition-all ${isSwitching ? 'scale-125 rotate-12 bg-white text-gray-900' : ''}`}>
+           {persona === Persona.MELISSA ? 'M' : 'E'}
         </div>
       </div>
 
       <div className="flex flex-col items-center py-6 relative z-10">
-        
-        {/* Dynamic Wave Visualizer */}
         <div className="h-12 flex items-center justify-center gap-1 mb-6">
           {isSpeaking ? (
-            [...Array(15)].map((_, i) => {
-              const animClasses = ['animate-wave-sm', 'animate-wave-md', 'animate-wave-lg', 'animate-wave-md', 'animate-wave-sm'];
-              const animClass = animClasses[i % animClasses.length];
-              return (
-                <div 
-                  key={i}
-                  className={`${isEmergency ? 'visualizer-bar-mike' : 'visualizer-bar-sarah'} ${animClass}`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
-                ></div>
-              );
-            })
+            [...Array(15)].map((_, i) => (
+              <div key={i} className={`${isEmergency ? 'visualizer-bar-mike' : 'visualizer-bar-sarah'} animate-wave-md`} style={{ animationDelay: `${i * 0.05}s` }}></div>
+            ))
           ) : (
             [...Array(15)].map((_, i) => (
-              <div 
-                key={i}
-                className={`w-[3px] h-1 rounded-full opacity-20 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}
-              ></div>
+              <div key={i} className={`w-[3px] h-1 rounded-full opacity-20 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}></div>
             ))
           )}
         </div>
 
         <div className={`relative mb-8 group cursor-pointer transition-transform active:scale-95 ${isActive ? 'scale-110' : ''}`} onClick={onToggle}>
-           <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 ${
-             isActive ? (isEmergency ? 'bg-white/40' : 'bg-blue-400/50') : 'bg-black/20'
-           } ${isSpeaking ? 'scale-125 opacity-60 bg-white' : ''}`}></div>
-           <div className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 ${
-             isActive ? 'bg-white text-blue-900 shadow-2xl' : 'bg-white/20 text-white border-2 border-white/40'
-           } ${isSpeaking ? 'ring-4 ring-white/50 animate-pulse' : ''} ${isSwitching ? 'blur-[1px] brightness-150' : ''}`}>
+           <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 ${isActive ? (isEmergency ? 'bg-white/40' : 'bg-blue-400/50') : 'bg-black/20'}`}></div>
+           <div className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 ${isActive ? 'bg-white text-blue-900 shadow-2xl' : 'bg-white/20 text-white border-2 border-white/40'}`}>
              {isConnecting ? (
                <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
              ) : (
                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 {isActive ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                 ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                 )}
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                </svg>
              )}
            </div>
         </div>
-        <p className={`text-sm font-bold tracking-widest uppercase mb-1 transition-opacity ${isSwitching ? 'opacity-0' : 'opacity-100'}`}>
-          {isActive ? (isConnecting ? 'CONNECTING...' : (isSpeaking ? 'AGENT SPEAKING...' : 'LISTENING')) : 'START VOICE CONSOLE'}
+        <p className="text-sm font-bold tracking-widest uppercase mb-1">
+          {isActive ? (isConnecting ? 'CONNECTING...' : (isSpeaking ? 'AGENT SPEAKING...' : 'LISTENING')) : 'ACTIVATE VOICE TRIAGE'}
         </p>
-        <p className="text-[10px] opacity-60 text-center px-4">
-          Speak to {isEmergency ? 'Mike' : 'Sarah'} directly about your issue.
-        </p>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-bold opacity-70 relative z-10">
-         <span>LATENCY: 240MS</span>
-         <span>SECURE ENCRYPTED LINE</span>
       </div>
     </div>
   );
