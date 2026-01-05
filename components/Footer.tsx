@@ -60,7 +60,6 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                 <span className="text-[14px] font-bold text-slate-900">TSSA License: 000394817</span>
               </div>
               
-              {/* SOCIAL ICONS REFINED TO MATCH SCREENSHOT */}
               <div className="flex gap-4">
                 {['FB', 'IG', 'IN'].map((social) => (
                   <div key={social} className="w-12 h-12 rounded-[1rem] bg-[#F8FAFC] flex items-center justify-center text-[13px] font-black text-[#94A3B8] hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:shadow-md hover:-translate-y-1 active:scale-95">
@@ -79,7 +78,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             <ul className="space-y-6 text-[16px] font-semibold text-slate-500">
               {['Emergency Repair', 'Heat Pump Specialist', 'Drain Cleaning', 'Sewer Inspections', 'Furnace Maintenance'].map((item) => (
                 <li key={item} className="transition-transform hover:translate-x-3 duration-300">
-                  <a href="#services" onClick={handleScroll('#services')} className="hover:text-slate-950 transition-colors flex items-center gap-4 group">
+                  <a href="#services" onClick={handleScroll('#services')} className="hover:text-slate-950 transition-colors flex items-center gap-4 group text-sm">
                     <span className={`w-2 h-2 rounded-full transition-all group-hover:scale-150 ${isEmergency ? 'bg-orange-300' : 'bg-blue-300'}`}></span>
                     {item}
                   </a>
@@ -102,7 +101,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                 { label: 'Privacy Protocol', id: '#top' }
               ].map((item) => (
                 <li key={item.label} className="transition-transform hover:translate-x-3 duration-300">
-                  <a href={item.id} onClick={handleScroll(item.id)} className="hover:text-slate-950 transition-colors flex items-center gap-4 group">
+                  <a href={item.id} onClick={handleScroll(item.id)} className="hover:text-slate-950 transition-colors flex items-center gap-4 group text-sm">
                     <span className={`w-2 h-2 rounded-full transition-all group-hover:scale-150 ${isEmergency ? 'bg-orange-300' : 'bg-blue-300'}`}></span>
                     {item.label}
                   </a>
@@ -132,7 +131,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                   </span>
                 </div>
                 
-                <a href="tel:18669322818" className="text-[36px] font-black block text-white tracking-tighter hover:scale-[1.02] transition-transform duration-300 origin-left">
+                <a href="tel:18669322818" className="text-[32px] font-black block text-white tracking-tighter hover:scale-[1.02] transition-transform duration-300 origin-left">
                   (866) 932-2818
                 </a>
                 
@@ -154,49 +153,54 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                   <span className="text-slate-400 font-semibold text-[13px]">Mississauga, ON L5L 6B1</span>
                 </p>
               </div>
-              
-              <div className="flex flex-wrap items-center gap-3">
-                {['BBB', 'GOOGLE', 'SAFEWORK'].map((badge) => (
-                  <div key={badge} className="px-5 py-3 bg-[#F8FAFC] border border-slate-100 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] shadow-sm hover:border-slate-300 hover:text-slate-950 transition-all cursor-default active:scale-95">
-                    {badge}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-950 text-white relative">
+      {/* RE-ORGANIZED BOTTOM BAR */}
+      <div className="bg-slate-950 text-white border-t border-slate-900">
         <div className={`h-1.5 w-full ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
         
-        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-12">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-10">
+        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-8">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
             
-            <div className="flex items-center gap-5">
-              <div className={`w-3.5 h-3.5 rounded-full shadow-[0_0_15px_rgba(255,255,255,0.2)] ${isEmergency ? 'bg-orange-500 animate-pulse' : 'bg-blue-500'}`}></div>
-              <p className="text-[15px] font-black uppercase tracking-[0.2em] text-white">
-                © 2025 Superior Plumbing & Heating Ltd.
-                <span className="mx-6 text-slate-800 font-normal">|</span>
-                <span className="text-slate-400 font-bold tracking-normal lowercase opacity-70">Enterprise Asset</span>
-              </p>
+            {/* Copyright block */}
+            <div className="flex items-center gap-4">
+              <div className={`w-2.5 h-2.5 rounded-full ${isEmergency ? 'bg-orange-500 animate-pulse' : 'bg-blue-500'}`}></div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <p className="text-[13px] font-black uppercase tracking-[0.05em] text-white whitespace-nowrap">
+                  © 2025 SUPERIOR PLUMBING & HEATING LTD.
+                </p>
+                <div className="w-px h-4 bg-slate-800 hidden sm:block"></div>
+                <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                  enterprise asset
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-16 text-[14px] font-black uppercase tracking-[0.25em]">
-              <a href="#legal" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all border-b-2 border-transparent hover:border-blue-500 pb-1">Legal</a>
-              <a href="#careers" onClick={handleScroll('#book')} className="text-slate-400 hover:text-white transition-all border-b-2 border-transparent hover:border-blue-500 pb-1">Careers</a>
-              <a href="#sitemap" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all border-b-2 border-transparent hover:border-blue-500 pb-1">Sitemap</a>
+            {/* Navigation links */}
+            <div className="flex items-center gap-10 text-[11px] font-black uppercase tracking-[0.2em]">
+              <a href="#legal" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all">LEGAL</a>
+              <a href="#careers" onClick={handleScroll('#book')} className="text-slate-400 hover:text-white transition-all">CAREERS</a>
+              <a href="#sitemap" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all">SITEMAP</a>
             </div>
 
-            <div className="flex items-center gap-8">
-              <div className="w-px h-10 bg-slate-800 hidden lg:block"></div>
+            {/* Tech Status section */}
+            <div className="flex items-center gap-6">
+              <div className="w-px h-8 bg-slate-800 hidden lg:block"></div>
               <div className="flex flex-col items-end">
-                <span className="text-[11px] font-black text-slate-600 uppercase tracking-widest mb-1.5">System Status</span>
-                <div className={`px-5 py-2 rounded-xl border font-mono text-[14px] font-black tracking-tighter ${isEmergency ? 'border-orange-900/50 bg-orange-950/40 text-orange-400' : 'border-blue-900/50 bg-blue-950/40 text-blue-400'}`}>
+                <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mb-1">SYSTEM STATUS</span>
+                <div className={`px-4 py-1.5 rounded-lg border font-mono text-[11px] font-black tracking-tight whitespace-nowrap ${
+                  isEmergency 
+                    ? 'border-orange-900/40 bg-orange-950/30 text-orange-400' 
+                    : 'border-blue-900/40 bg-blue-950/30 text-blue-400'
+                }`}>
                   #SPH-7492-LIVE
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
