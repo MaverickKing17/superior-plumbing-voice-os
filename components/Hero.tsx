@@ -62,10 +62,10 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
            <div className="relative">
               <div className={`absolute inset-0 rounded-full blur-[100px] opacity-40 transition-colors duration-700 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
               
-              {/* Mike's Image: High-performance field technician */}
+              {/* Mike's Image: High-performance field technician - REPLACED WITH REQUESTED IMAGE */}
               {isEmergency ? (
                 <img 
-                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&h=800&auto=format&fit=crop" 
+                  src="https://i.ibb.co/rBLnnx8/hunyuan-image-3-0-b-Replace-the-current.png" 
                   alt="Emergency Dispatcher Mike" 
                   className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
                 />
