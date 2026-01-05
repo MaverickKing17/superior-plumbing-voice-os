@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
 import { Persona } from '../types.ts';
 import { SYSTEM_INSTRUCTIONS } from '../constants.tsx';
 
@@ -11,9 +11,25 @@ interface VoiceAgentProps {
   onTranscription: (text: string, role: 'user' | 'agent') => void;
 }
 
+const transferToHumanTool: FunctionDeclaration = {
+  name: 'transferToHuman',
+  parameters: {
+    type: Type.OBJECT,
+    description: 'Transfer the active voice call to a live human representative at Superior Plumbing & Heating.',
+    properties: {
+      reason: {
+        type: Type.STRING,
+        description: 'The reason for the transfer (e.g., persistent difficulty understanding input, customer requested human, or complex query).',
+      },
+    },
+    required: ['reason'],
+  },
+};
+
 const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, onTranscription }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isTransferring, setIsTransferring] = useState(false);
   
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -25,31 +41,23 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const prevPersonaRef = useRef<Persona>(persona);
 
-  // Bulletproof environment check for API Key
   const getApiKey = () => {
     try {
-      // Check window.process for some pre-bundled environments
       const win = window as any;
       if (win.process?.env?.API_KEY) return win.process.env.API_KEY;
-      
-      // Traditional node-like process check
       if (typeof process !== 'undefined' && process.env?.API_KEY) {
         return process.env.API_KEY;
       }
-    } catch (e) {
-      // Fallback silent failure
-    }
+    } catch (e) {}
     return null;
   };
 
-  // Generates a distinct auditory cue for the active persona
   const playActivationSound = (isEmergency: boolean) => {
     if (!audioContextRef.current) return;
     const ctx = audioContextRef.current;
     const now = ctx.currentTime;
 
     if (isEmergency) {
-      // "Superior Dispatch Urgent Triple Chirp" - Fast, high-frequency radio burst
       const frequencies = [1200, 1400, 1300];
       frequencies.forEach((freq, i) => {
         const startTime = now + (i * 0.04);
@@ -60,22 +68,19 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         gain.gain.setValueAtTime(0, startTime);
         gain.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
         gain.gain.linearRampToValueAtTime(0, startTime + 0.03);
-        
         osc.connect(gain).connect(ctx.destination);
         osc.start(startTime);
         osc.stop(startTime + 0.03);
       });
     } else {
-      // "Sales Advisor Concierge Chime" - Smooth ascending major interval
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, now); // C5
-      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3); // E5
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3);
       gain.gain.setValueAtTime(0, now);
       gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      
       osc.connect(gain).connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 0.4);
@@ -84,10 +89,8 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   const updateVisualizer = () => {
     if (!analyserRef.current || !visualizerRef.current) return;
-    
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
     analyserRef.current.getByteFrequencyData(dataArray);
-    
     const bars = visualizerRef.current.children;
     for (let i = 0; i < bars.length; i++) {
       const bar = bars[i] as HTMLElement;
@@ -95,7 +98,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       const height = Math.max(4, (val / 255) * 48);
       bar.style.height = `${height}px`;
     }
-    
     animationFrameRef.current = requestAnimationFrame(updateVisualizer);
   };
 
@@ -151,6 +153,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       return;
     }
     setIsConnecting(true);
+    setIsTransferring(false);
     
     try {
       const ai = new GoogleGenAI({ apiKey });
@@ -186,6 +189,23 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             animationFrameRef.current = requestAnimationFrame(updateVisualizer);
           },
           onmessage: async (message: LiveServerMessage) => {
+            if (message.toolCall) {
+              for (const fc of message.toolCall.functionCalls) {
+                if (fc.name === 'transferToHuman') {
+                  console.debug('TRANSFER TO HUMAN INITIATED: ', fc.args.reason);
+                  setIsTransferring(true);
+                  // Respond to the tool to clear model state before closing
+                  sessionPromise.then(s => s.sendToolResponse({
+                    functionResponses: { id: fc.id, name: fc.name, response: { status: 'success', info: 'Transfer active' } }
+                  }));
+                  // Hang up after short delay so user hears the final phrase
+                  setTimeout(() => {
+                    onToggle(); 
+                  }, 3000);
+                }
+              }
+            }
+
             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             if (base64Audio && audioContextRef.current && analyserRef.current) {
               const audioCtx = audioContextRef.current;
@@ -228,6 +248,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               }
             }
           },
+          tools: [{ functionDeclarations: [transferToHumanTool] }],
           inputAudioTranscription: {},
           outputAudioTranscription: {}
         }
@@ -298,15 +319,22 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       </div>
 
       <div className="flex flex-col items-center py-4 relative z-10">
-        <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-8">
-          {[...Array(16)].map((_, i) => (
-            <div 
-              key={i} 
-              className={`v-bar ${isEmergency ? 'v-bar-mike' : 'v-bar-melissa'}`}
-              style={{ height: '4px' }}
-            ></div>
-          ))}
-        </div>
+        {isTransferring ? (
+          <div className="h-16 flex flex-col items-center justify-center animate-pulse">
+            <p className="text-lg font-black uppercase tracking-[0.1em]">Transferring to Human...</p>
+            <p className="text-[10px] opacity-70">Securing next available agent</p>
+          </div>
+        ) : (
+          <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-8">
+            {[...Array(16)].map((_, i) => (
+              <div 
+                key={i} 
+                className={`v-bar ${isEmergency ? 'v-bar-mike' : 'v-bar-melissa'}`}
+                style={{ height: '4px' }}
+              ></div>
+            ))}
+          </div>
+        )}
 
         <button 
           onClick={onToggle}
@@ -331,7 +359,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
         <div className="mt-8 text-center space-y-1">
           <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70">
-            {isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Tap to Initiate')}
+            {isTransferring ? 'CALL HANDOFF' : (isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Tap to Initiate'))}
           </p>
           <div className="flex justify-center gap-1">
              <div className={`w-1 h-1 rounded-full bg-white transition-opacity ${isActive ? 'animate-bounce' : 'opacity-20'}`}></div>
