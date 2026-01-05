@@ -65,7 +65,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
               {/* Mike's Image: High-performance field technician - REPLACED WITH REQUESTED IMAGE */}
               {isEmergency ? (
                 <img 
-                  src="https://i.ibb.co/rBLnnx8/hunyuan-image-3-0-b-Replace-the-current.png" 
+                  src="https://i.ibb.co/99vGwK1F/gpt-image-1-5-a-Create-the-following.png" 
                   alt="Emergency Dispatcher Mike" 
                   className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
                 />
