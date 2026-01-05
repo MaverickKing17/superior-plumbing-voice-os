@@ -12,78 +12,86 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
   const isEmergency = persona === Persona.MIKE;
 
   return (
-    <section className="relative overflow-hidden rounded-[2.5rem] bg-white shadow-2xl border border-gray-100">
-      <div className={`absolute top-0 right-0 w-1/2 h-full transition-all duration-700 ${isEmergency ? 'bg-orange-600/10' : 'bg-blue-700/10'}`}></div>
+    <section className="relative overflow-hidden rounded-[3rem] bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100">
+      <div className={`absolute top-0 right-0 w-1/2 h-full transition-all duration-1000 ${isEmergency ? 'bg-orange-600/[0.03]' : 'bg-blue-700/[0.03]'}`}></div>
       
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[450px]">
-        <div className="p-8 md:p-16 space-y-8">
-          <div className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-2 shadow-sm ${isEmergency ? 'bg-orange-600 text-white' : 'bg-green-50 text-green-700'}`}>
-             {isEmergency ? '⚠️ Priority Dispatch Active' : '✅ 100% Satisfaction Guarantee'}
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[520px]">
+        <div className="p-10 md:p-20 space-y-10">
+          <div className={`inline-flex items-center px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em] mb-2 shadow-sm ${isEmergency ? 'bg-orange-600 text-white' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
+             {isEmergency ? '⚠️ PRIORITY DISPATCH ACTIVE' : '✅ 100% SATISFACTION GUARANTEE'}
           </div>
           
           {isEmergency ? (
             <>
-              <h2 className="text-4xl md:text-6xl font-black text-orange-950 leading-[1.1]">
+              <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.95] tracking-tight">
                 URGENT <br/> <span className="text-orange-600">DISPATCH</span>
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed font-medium">
+              <p className="text-slate-500 text-xl leading-relaxed font-medium max-w-md">
                 Mike is routing elite technicians to your location. <strong>4-hour arrival</strong> guaranteed for no heat or flood emergencies.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2">
+              <div className="flex flex-wrap gap-4 pt-4">
                 <button 
                   onClick={onVoiceToggle}
-                  className={`px-10 py-5 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 transform active:scale-95 ${isVoiceActive ? 'bg-white text-orange-600 border-4 border-orange-600' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
+                  className={`px-12 py-6 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-4 transform active:scale-95 group ${
+                    isVoiceActive 
+                      ? 'bg-white text-orange-600 border-4 border-orange-600' 
+                      : 'bg-orange-600 text-white hover:bg-orange-700 emergency-active'
+                  }`}
                 >
-                   <span className="text-2xl">🚨</span> {isVoiceActive ? 'LISTENING TO EMERGENCY' : 'TALK TO DISPATCH'}
+                   <span className="text-2xl group-hover:rotate-12 transition-transform">🚨</span> 
+                   {isVoiceActive ? 'LISTENING TO EMERGENCY' : 'TALK TO DISPATCH'}
                 </button>
               </div>
             </>
           ) : (
             <>
-              <h2 className="text-4xl md:text-6xl font-black text-blue-950 leading-[1.1]">
+              <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.95] tracking-tight">
                 SMART <br/> <span className="text-blue-700">SOLUTIONS</span>
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed font-medium">
+              <p className="text-slate-500 text-xl leading-relaxed font-medium max-w-md">
                 Speak with Melissa to schedule maintenance or verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
               </p>
-              <div className="flex flex-wrap gap-4 pt-2">
+              <div className="flex flex-wrap gap-4 pt-4">
                 <button 
                   onClick={onVoiceToggle}
-                  className={`px-10 py-5 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 transform active:scale-95 ${isVoiceActive ? 'bg-white text-blue-700 border-4 border-blue-700' : 'bg-blue-700 text-white hover:bg-blue-800'}`}
+                  className={`px-12 py-6 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-4 transform active:scale-95 group ${
+                    isVoiceActive 
+                      ? 'bg-white text-blue-700 border-4 border-blue-700' 
+                      : 'bg-blue-700 text-white hover:bg-blue-800'
+                  }`}
                 >
-                  <span className="text-2xl">🎙️</span> {isVoiceActive ? 'MELISSA IS LISTENING' : 'START VOICE INQUIRY'}
+                  <span className="text-2xl group-hover:scale-110 transition-transform">🎙️</span> 
+                  {isVoiceActive ? 'MELISSA IS LISTENING' : 'START VOICE INQUIRY'}
                 </button>
               </div>
             </>
           )}
         </div>
         
-        <div className="hidden md:flex justify-center p-12">
-           <div className="relative">
-              <div className={`absolute inset-0 rounded-full blur-[100px] opacity-40 transition-colors duration-700 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
+        <div className="hidden md:flex justify-center p-16">
+           <div className="relative group">
+              <div className={`absolute inset-0 rounded-full blur-[120px] opacity-30 transition-all duration-1000 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
               
-              {/* Mike's Image: High-performance field technician - REPLACED WITH REQUESTED IMAGE */}
               {isEmergency ? (
                 <img 
                   src="https://i.ibb.co/99vGwK1F/gpt-image-1-5-a-Create-the-following.png" 
                   alt="Emergency Dispatcher Mike" 
-                  className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
+                  className="relative z-10 w-[420px] h-[420px] object-cover rounded-[4rem] shadow-2xl border-[12px] border-white transition-all duration-500 group-hover:scale-[1.02]"
                 />
               ) : (
-                /* Melissa's Image: Professional advisor */
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&h=800&auto=format&fit=crop" 
                   alt="Home Advisor Melissa" 
-                  className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
+                  className="relative z-10 w-[420px] h-[420px] object-cover rounded-[4rem] shadow-2xl border-[12px] border-white transition-all duration-500 group-hover:scale-[1.02]"
                 />
               )}
 
-              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-[2rem] shadow-2xl border border-gray-100 z-20 transition-transform hover:scale-110">
-                 <p className={`text-3xl font-black ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
+              <div className="absolute -bottom-8 -right-8 bg-white p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-50 z-20 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-3xl">
+                 <p className={`text-4xl font-black ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
                    {isEmergency ? '18m' : '24/7'}
                  </p>
-                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                   {isEmergency ? 'Avg. Arrival' : 'Professional Support'}
+                 <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                   {isEmergency ? 'Avg. Arrival' : 'Direct Support'}
                  </p>
               </div>
            </div>

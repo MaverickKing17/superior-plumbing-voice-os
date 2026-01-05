@@ -13,43 +13,53 @@
       }
       body {
         font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: -0.01em;
       }
       
       /* Visualizer Bar Styles */
       .v-bar {
-        width: 4px;
-        border-radius: 4px;
-        transition: height 0.05s ease, background-color 0.3s ease;
+        width: 6px;
+        border-radius: 8px;
+        transition: height 0.1s cubic-bezier(0.17, 0.67, 0.83, 0.67), background-color 0.5s ease;
         min-height: 4px;
       }
       
       /* Melissa's Wave: Professional & Calm */
       .v-bar-melissa {
-        background: linear-gradient(to top, #3b82f6, #60a5fa);
-        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        background: linear-gradient(to top, #1d4ed8, #60a5fa);
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
       }
 
       /* Mike's Wave: Urgent & Alert */
       .v-bar-mike {
-        background: linear-gradient(to top, #ea580c, #fb923c);
-        box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
+        background: linear-gradient(to top, #c2410c, #fb923c);
+        box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
       }
 
       @keyframes message-slide-up {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
       }
       .animate-message {
-        animation: message-slide-up 0.3s ease-out forwards;
+        animation: message-slide-up 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
       }
 
       @keyframes live-pulse {
         0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.2); opacity: 0.7; }
+        50% { transform: scale(1.4); opacity: 0.4; }
         100% { transform: scale(1); opacity: 1; }
       }
       .animate-live {
         animation: live-pulse 2s infinite;
+      }
+
+      @keyframes emergency-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(234, 88, 12, 0.4); }
+        50% { box-shadow: 0 0 40px rgba(234, 88, 12, 0.7); }
+      }
+      .emergency-active {
+        animation: emergency-glow 1.5s infinite;
       }
     </style>
   <script type="importmap">
@@ -64,7 +74,7 @@
 }
 </script>
 </head>
-  <body class="bg-gray-50 text-gray-900">
+  <body class="bg-[#F8FAFC] text-slate-900">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
