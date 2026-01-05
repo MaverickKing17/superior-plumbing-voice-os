@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Superior Plumbing & Heating | AI Voice Dispatch</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       html {
         scroll-behavior: smooth;
@@ -14,47 +14,26 @@
       body {
         font-family: 'Inter', sans-serif;
       }
-      .emergency-orange {
-        background-color: #ff5722;
-      }
-      .professional-blue {
-        background-color: #0d47a1;
-      }
-      .transition-all {
-        transition: all 0.5s ease-in-out;
+      
+      /* Visualizer Bar Styles */
+      .v-bar {
+        width: 4px;
+        border-radius: 4px;
+        transition: height 0.05s ease, background-color 0.3s ease;
+        min-height: 4px;
       }
       
-      /* Base Wave Animations */
-      @keyframes wave-quiet {
-        0%, 100% { height: 4px; opacity: 0.4; }
-        50% { height: 10px; opacity: 0.7; }
-      }
-      @keyframes wave-normal {
-        0%, 100% { height: 6px; opacity: 0.5; }
-        50% { height: 22px; opacity: 1; }
-      }
-      @keyframes wave-loud {
-        0%, 100% { height: 4px; opacity: 0.6; }
-        50% { height: 32px; opacity: 1; }
+      /* Melissa's Wave: Professional & Calm */
+      .v-bar-melissa {
+        background: linear-gradient(to top, #3b82f6, #60a5fa);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
       }
 
-      /* Sarah's calm wave */
-      .visualizer-bar-sarah {
-        width: 3px;
-        background-color: #93c5fd; /* blue-300 */
-        border-radius: 2px;
+      /* Mike's Wave: Urgent & Alert */
+      .v-bar-mike {
+        background: linear-gradient(to top, #ea580c, #fb923c);
+        box-shadow: 0 0 10px rgba(234, 88, 12, 0.3);
       }
-      
-      /* Mike's urgent wave */
-      .visualizer-bar-mike {
-        width: 3px;
-        background-color: #fdba74; /* orange-300 */
-        border-radius: 2px;
-      }
-
-      .animate-wave-sm { animation: wave-quiet 0.8s ease-in-out infinite; }
-      .animate-wave-md { animation: wave-normal 0.6s ease-in-out infinite; }
-      .animate-wave-lg { animation: wave-loud 0.5s ease-in-out infinite; }
 
       @keyframes message-slide-up {
         from { opacity: 0; transform: translateY(10px); }
@@ -63,6 +42,7 @@
       .animate-message {
         animation: message-slide-up 0.3s ease-out forwards;
       }
+
       @keyframes live-pulse {
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.2); opacity: 0.7; }
@@ -70,12 +50,6 @@
       }
       .animate-live {
         animation: live-pulse 2s infinite;
-      }
-      @keyframes scan-line {
-        0% { transform: translateY(0); opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { transform: translateY(280px); opacity: 0; }
       }
     </style>
   <script type="importmap">
