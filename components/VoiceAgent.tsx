@@ -25,7 +25,21 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const prevPersonaRef = useRef<Persona>(persona);
 
-  // Frequency visualization loop
+  // Robust check for process.env.API_KEY to prevent ReferenceErrors
+  const getApiKey = () => {
+    try {
+      if (typeof window !== 'undefined' && (window as any).process?.env?.API_KEY) {
+        return (window as any).process.env.API_KEY;
+      }
+      if (typeof process !== 'undefined' && process.env?.API_KEY) {
+        return process.env.API_KEY;
+      }
+    } catch (e) {
+      // Fail silently to avoid Uncaught errors
+    }
+    return null;
+  };
+
   const updateVisualizer = () => {
     if (!analyserRef.current || !visualizerRef.current) return;
     
@@ -35,8 +49,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     const bars = visualizerRef.current.children;
     for (let i = 0; i < bars.length; i++) {
       const bar = bars[i] as HTMLElement;
-      // Map frequency data to height (4px to 48px)
-      // Use a slightly different index map to make it look "natural"
       const val = dataArray[i * 2] || 0;
       const height = Math.max(4, (val / 255) * 48);
       bar.style.height = `${height}px`;
@@ -46,12 +58,16 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   };
 
   const decode = (base64: string) => {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+    try {
+      const binaryString = atob(base64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes;
+    } catch (e) {
+      return new Uint8Array(0);
     }
-    return bytes;
   };
 
   const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number): Promise<AudioBuffer> => {
@@ -87,16 +103,20 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   };
 
   const startSession = async () => {
-    if (!process.env.API_KEY) return;
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      console.warn('Superior Voice: API Key missing. Service mode inactive.');
+      return;
+    }
     setIsConnecting(true);
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey });
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
       const analyser = outputCtx.createAnalyser();
-      analyser.fftSize = 64; // Small fft for few bars
+      analyser.fftSize = 64; 
       analyserRef.current = analyser;
       analyser.connect(outputCtx.destination);
       
@@ -113,26 +133,23 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
-              sessionPromise.then(session => session.sendRealtimeInput({ media: pcmBlob }));
+              sessionPromise.then(session => {
+                if (session) session.sendRealtimeInput({ media: pcmBlob });
+              }).catch(() => {});
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
-            
-            // Start visualizer animation
             animationFrameRef.current = requestAnimationFrame(updateVisualizer);
           },
           onmessage: async (message: LiveServerMessage) => {
             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (base64Audio) {
-              const audioCtx = audioContextRef.current!;
+            if (base64Audio && audioContextRef.current && analyserRef.current) {
+              const audioCtx = audioContextRef.current;
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioCtx.currentTime);
               const audioBuffer = await decodeAudioData(decode(base64Audio), audioCtx, 24000, 1);
               const source = audioCtx.createBufferSource();
               source.buffer = audioBuffer;
-              
-              // CONNECT TO ANALYSER INSTEAD OF DIRECT DESTINATION
-              source.connect(analyserRef.current!);
-              
+              source.connect(analyserRef.current);
               source.start(nextStartTimeRef.current);
               nextStartTimeRef.current += audioBuffer.duration;
               sourcesRef.current.add(source);
@@ -150,10 +167,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               onTranscription(message.serverContent.outputTranscription.text, 'agent');
             }
           },
-          onerror: (e) => {
-            console.error('Live API Error', e);
-            setIsConnecting(false);
-          },
+          onerror: () => setIsConnecting(false),
           onclose: () => {
             setIsConnecting(false);
             setIsSpeaking(false);
@@ -177,18 +191,17 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
       sessionRef.current = await sessionPromise;
     } catch (err) {
-      console.error(err);
       setIsConnecting(false);
     }
   };
 
   const stopSession = () => {
     if (sessionRef.current) {
-      sessionRef.current.close();
+      try { sessionRef.current.close(); } catch(e) {}
       sessionRef.current = null;
     }
     if (audioContextRef.current) {
-      audioContextRef.current.close();
+      try { audioContextRef.current.close(); } catch(e) {}
       audioContextRef.current = null;
     }
     cancelAnimationFrame(animationFrameRef.current);
@@ -221,7 +234,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-900 border-blue-700'
     } text-white`}>
       
-      {/* Background decoration */}
       <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 transition-colors duration-700 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}></div>
 
       <div className="flex items-center justify-between mb-8 relative z-10">
@@ -242,7 +254,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       </div>
 
       <div className="flex flex-col items-center py-4 relative z-10">
-        {/* Dynamic Visualizer Area */}
         <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-8">
           {[...Array(16)].map((_, i) => (
             <div 
