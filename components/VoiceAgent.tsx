@@ -49,30 +49,22 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     const now = ctx.currentTime;
 
     if (isEmergency) {
-      // "Superior Dispatch Radio Chirp" - High pitched, authoritative double beep
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(1100, now);
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
-      gain.gain.linearRampToValueAtTime(0, now + 0.05);
-      
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      osc2.type = 'square';
-      osc2.frequency.setValueAtTime(950, now + 0.06);
-      gain2.gain.setValueAtTime(0, now + 0.06);
-      gain2.gain.linearRampToValueAtTime(0.08, now + 0.08);
-      gain2.gain.linearRampToValueAtTime(0, now + 0.12);
-
-      osc.connect(gain).connect(ctx.destination);
-      osc2.connect(gain2).connect(ctx.destination);
-      
-      osc.start(now);
-      osc.stop(now + 0.05);
-      osc2.start(now + 0.06);
-      osc2.stop(now + 0.12);
+      // "Superior Dispatch Urgent Triple Chirp" - Fast, high-frequency radio burst
+      const frequencies = [1200, 1400, 1300];
+      frequencies.forEach((freq, i) => {
+        const startTime = now + (i * 0.04);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
+        gain.gain.linearRampToValueAtTime(0, startTime + 0.03);
+        
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.03);
+      });
     } else {
       // "Sales Advisor Concierge Chime" - Smooth ascending major interval
       const osc = ctx.createOscillator();
