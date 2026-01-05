@@ -11,77 +11,80 @@ interface HeroProps {
 const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) => {
   const isEmergency = persona === Persona.MIKE;
 
-  const scrollToBook = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const el = document.getElementById('book');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-white shadow-xl border border-gray-100">
+    <section className="relative overflow-hidden rounded-[2.5rem] bg-white shadow-2xl border border-gray-100">
       <div className={`absolute top-0 right-0 w-1/2 h-full transition-all duration-700 ${isEmergency ? 'bg-orange-600/10' : 'bg-blue-700/10'}`}></div>
       
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[400px]">
-        <div className="p-8 md:p-12 space-y-6">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold uppercase tracking-wider mb-2">
-            ✅ Superior Performance & Efficiency
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[450px]">
+        <div className="p-8 md:p-16 space-y-8">
+          <div className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-2 shadow-sm ${isEmergency ? 'bg-orange-600 text-white' : 'bg-green-50 text-green-700'}`}>
+             {isEmergency ? '⚠️ Priority Dispatch Active' : '✅ 100% Satisfaction Guarantee'}
           </div>
           
           {isEmergency ? (
             <>
-              <h2 className="text-4xl md:text-5xl font-black text-orange-900 leading-tight">
-                RAPID DISPATCH <br/> <span className="text-orange-600">TRIAGE ACTIVE</span>
+              <h2 className="text-4xl md:text-6xl font-black text-orange-950 leading-[1.1]">
+                URGENT <br/> <span className="text-orange-600">DISPATCH</span>
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Emergency detected. Speak to Mike for immediate safety routing. <strong>4-hour arrival window</strong> guaranteed for GTA emergencies.
+              <p className="text-gray-600 text-lg leading-relaxed font-medium">
+                Mike is routing elite technicians to your location. <strong>4-hour arrival</strong> guaranteed for no heat or flood emergencies.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 pt-2">
                 <button 
                   onClick={onVoiceToggle}
-                  className={`px-8 py-4 rounded-xl font-black shadow-xl transition-all flex items-center gap-2 transform active:scale-95 ${isVoiceActive ? 'bg-white text-orange-600 border-2 border-orange-600' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
+                  className={`px-10 py-5 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 transform active:scale-95 ${isVoiceActive ? 'bg-white text-orange-600 border-4 border-orange-600' : 'bg-orange-600 text-white hover:bg-orange-700'}`}
                 >
-                   <span>🚨</span> {isVoiceActive ? 'AGENT LISTENING...' : 'START EMERGENCY DISPATCH'}
+                   <span className="text-2xl">🚨</span> {isVoiceActive ? 'LISTENING TO EMERGENCY' : 'TALK TO DISPATCH'}
                 </button>
               </div>
             </>
           ) : (
             <>
-              <h2 className="text-4xl md:text-5xl font-black text-blue-900 leading-tight">
-                MELISSA <br/> <span className="text-blue-700">SALES & REBATE ADVISOR</span>
+              <h2 className="text-4xl md:text-6xl font-black text-blue-950 leading-[1.1]">
+                SMART <br/> <span className="text-blue-700">SOLUTIONS</span>
               </h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                Maximize home efficiency and savings. Melissa can verify your eligibility for up to <strong>$7,500 in Ontario HRS rebates</strong> right now.
+              <p className="text-gray-600 text-lg leading-relaxed font-medium">
+                Speak with Melissa to schedule maintenance or verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 pt-2">
                 <button 
                   onClick={onVoiceToggle}
-                  className={`px-8 py-4 rounded-xl font-black shadow-xl transition-all flex items-center gap-2 transform active:scale-95 ${isVoiceActive ? 'bg-white text-blue-700 border-2 border-blue-700' : 'bg-blue-700 text-white hover:bg-blue-800'}`}
+                  className={`px-10 py-5 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-3 transform active:scale-95 ${isVoiceActive ? 'bg-white text-blue-700 border-4 border-blue-700' : 'bg-blue-700 text-white hover:bg-blue-800'}`}
                 >
-                  <span>🎙️</span> {isVoiceActive ? 'MELISSA IS LISTENING' : 'START REBATE INQUIRY'}
+                  <span className="text-2xl">🎙️</span> {isVoiceActive ? 'MELISSA IS LISTENING' : 'START VOICE INQUIRY'}
                 </button>
-                <div className="flex flex-col justify-center">
-                   <p className="text-xs font-bold text-gray-400 uppercase">Energy Audits</p>
-                   <p className="text-xl font-bold text-green-600">Rebate Compliant</p>
-                </div>
               </div>
             </>
           )}
         </div>
         
-        <div className="hidden md:flex justify-center p-8">
+        <div className="hidden md:flex justify-center p-12">
            <div className="relative">
-              <div className={`absolute inset-0 rounded-full blur-3xl opacity-30 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
-              <img 
-                src={isEmergency 
-                  ? "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=600&h=600&auto=format&fit=crop" 
-                  : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&h=600&auto=format&fit=crop"
-                } 
-                alt="Elite AI Agent" 
-                className="relative z-10 w-80 h-80 object-cover rounded-3xl shadow-2xl border-4 border-white transition-opacity duration-500"
-              />
-              <div className="absolute -bottom-4 -right-4 bg-white p-4 rounded-2xl shadow-lg border border-gray-100 z-20">
-                 <p className="text-2xl font-black text-blue-900">100%</p>
-                 <p className="text-[10px] font-bold text-gray-400 uppercase">Knowledge Base Synced</p>
+              <div className={`absolute inset-0 rounded-full blur-[100px] opacity-40 transition-colors duration-700 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
+              
+              {/* Mike's Image: High-performance field technician */}
+              {isEmergency ? (
+                <img 
+                  src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800&h=800&auto=format&fit=crop" 
+                  alt="Emergency Dispatcher Mike" 
+                  className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
+                />
+              ) : (
+                /* Melissa's Image: Professional advisor */
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&h=800&auto=format&fit=crop" 
+                  alt="Home Advisor Melissa" 
+                  className="relative z-10 w-96 h-96 object-cover rounded-[3rem] shadow-2xl border-8 border-white animate-message"
+                />
+              )}
+
+              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-[2rem] shadow-2xl border border-gray-100 z-20 transition-transform hover:scale-110">
+                 <p className={`text-3xl font-black ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
+                   {isEmergency ? '18m' : '24/7'}
+                 </p>
+                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                   {isEmergency ? 'Avg. Arrival' : 'Professional Support'}
+                 </p>
               </div>
            </div>
         </div>

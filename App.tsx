@@ -42,7 +42,7 @@ const App: React.FC = () => {
     <div className={`min-h-screen transition-all duration-700 ${
       activePersona === Persona.MIKE ? 'bg-orange-50' : 'bg-gray-50'
     }`}>
-      <Header persona={activePersona} />
+      <Header persona={activePersona} setPersona={setActivePersona} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
         <Hero persona={activePersona} onVoiceToggle={toggleVoice} isVoiceActive={isVoiceActive} />

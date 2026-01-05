@@ -4,9 +4,10 @@ import { Persona } from '../types.ts';
 
 interface HeaderProps {
   persona: Persona;
+  setPersona?: (p: Persona) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ persona }) => {
+const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
   const isEmergency = persona === Persona.MIKE;
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
@@ -20,6 +21,12 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
       window.history.pushState(null, '', `#${id}`);
+    }
+  };
+
+  const togglePersona = () => {
+    if (setPersona) {
+      setPersona(isEmergency ? Persona.MELISSA : Persona.MIKE);
     }
   };
 
@@ -38,47 +45,41 @@ const Header: React.FC<HeaderProps> = ({ persona }) => {
                 </svg>
               </div>
               <div className="hidden sm:block">
-                <h1 className={`text-xl font-black uppercase tracking-tight ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
-                  Superior <span className="text-gray-500">Plumbing</span>
+                <h1 className={`text-xl font-bold uppercase tracking-tight ${isEmergency ? 'text-orange-950' : 'text-blue-900'}`}>
+                  Superior <span className="text-gray-500 font-medium">Plumbing</span>
                 </h1>
-                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold -mt-1 leading-none">Professional Care Since 2010</p>
+                <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold -mt-1 leading-none">Enterprise Solutions</p>
               </div>
             </div>
           </div>
           
           <div className="flex items-center gap-4 md:gap-8">
-            <div className="hidden md:flex gap-6 font-semibold text-gray-600">
-              <a 
-                href="#services" 
-                onClick={scrollToSection('services')} 
-                className={`hover:text-blue-700 transition-colors cursor-pointer ${isEmergency ? 'hover:text-orange-600' : 'hover:text-blue-700'}`}
-              >
-                Services
-              </a>
-              <a 
-                href="#rebates" 
-                onClick={scrollToSection('rebates')} 
-                className={`hover:text-blue-700 transition-colors cursor-pointer ${isEmergency ? 'hover:text-orange-600' : 'hover:text-blue-700'}`}
-              >
-                Rebates
-              </a>
-              <a 
-                href="#areas" 
-                onClick={scrollToSection('areas')} 
-                className={`hover:text-blue-700 transition-colors cursor-pointer ${isEmergency ? 'hover:text-orange-600' : 'hover:text-blue-700'}`}
-              >
-                Areas
-              </a>
+            <button 
+              onClick={togglePersona}
+              className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[10px] font-black uppercase transition-all ${isEmergency ? 'border-orange-200 text-orange-600 bg-orange-50' : 'border-blue-200 text-blue-700 bg-blue-50'}`}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
+              </span>
+              Demo: Switch View
+            </button>
+
+            <div className="hidden xl:flex gap-6 font-semibold text-gray-600">
+              <a href="#services" onClick={scrollToSection('services')} className="hover:text-blue-700 transition-colors">Services</a>
+              <a href="#rebates" onClick={scrollToSection('rebates')} className="hover:text-blue-700 transition-colors">Rebates</a>
             </div>
+
             <div className="flex flex-col items-end">
-              <p className="text-xs text-gray-400 font-bold uppercase">Order a Specialist</p>
-              <a href="tel:18669322818" className={`text-xl font-bold transition-colors ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Emergency Line</p>
+              <a href="tel:18669322818" className={`text-lg font-black transition-colors ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
                 (866) 932-2818
               </a>
             </div>
+
             <button 
               onClick={scrollToSection('book')}
-              className={`hidden sm:block px-6 py-2.5 rounded-full font-bold text-white shadow-lg transition-all transform hover:scale-105 active:scale-95 ${isEmergency ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-700 hover:bg-blue-800'}`}
+              className={`hidden sm:block px-6 py-2.5 rounded-xl font-black text-white shadow-lg transition-all transform hover:scale-105 active:scale-95 ${isEmergency ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-700 hover:bg-blue-800'}`}
             >
               BOOK NOW
             </button>
