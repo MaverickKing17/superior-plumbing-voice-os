@@ -38,92 +38,108 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
   );
 
   return (
-    <footer className="bg-white pt-16 pb-8 border-t border-gray-100 overflow-hidden relative">
-      {/* Background Decor */}
-      <div className={`absolute -bottom-24 -left-24 w-64 h-64 rounded-full blur-3xl opacity-5 transition-colors duration-700 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
+    <footer className="bg-white pt-20 pb-10 border-t border-gray-100 overflow-hidden relative">
+      {/* Subtle Background Glow */}
+      <div className={`absolute -bottom-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-[0.03] transition-colors duration-700 ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Brand Column */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-20">
+          
+          {/* Brand Identity Section */}
+          <div className="lg:col-span-4 space-y-8">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={handleScroll('#top')}>
               <LogoIcon />
               <div>
-                <h3 className={`text-lg font-black uppercase tracking-tight group-hover:opacity-80 transition-opacity ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
+                <h3 className={`text-xl font-black uppercase tracking-tighter group-hover:opacity-80 transition-opacity ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>
                   Superior <span className="text-gray-400">Plumbing</span>
                 </h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Professional Care Since 2010</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] leading-none">Professional Care Since 2010</p>
               </div>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Providing elite HVAC and plumbing solutions across the GTA with a 100% satisfaction guarantee and 4-hour emergency response.
-            </p>
-            <div className="text-[10px] font-bold text-gray-400">
-               TSSA License No: 000394817
+            
+            <div className="space-y-4">
+              <p className="text-gray-500 text-sm leading-relaxed max-w-sm">
+                Providing elite HVAC and plumbing solutions across the GTA with a 100% satisfaction guarantee and 4-hour emergency response.
+              </p>
+              <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-100 shadow-sm">
+                <span className="text-[11px] font-black text-gray-400 uppercase tracking-wider">TSSA License: 000394817</span>
+              </div>
             </div>
-            <div className="flex gap-4">
-              <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-[10px] font-bold">FB</span>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-[10px] font-bold">IG</span>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer text-gray-400">
-                <span className="text-[10px] font-bold">IN</span>
-              </div>
+
+            <div className="flex gap-3">
+              {['FB', 'IG', 'IN'].map((social) => (
+                <div key={social} className="w-9 h-9 rounded-xl bg-white border border-gray-100 flex items-center justify-center hover:bg-gray-50 hover:border-gray-200 hover:-translate-y-1 transition-all cursor-pointer shadow-sm">
+                  <span className="text-[10px] font-black text-gray-400">{social}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Our Services</h4>
-            <ul className="space-y-4 text-sm font-medium text-gray-500">
-              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Emergency Repair</a></li>
-              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Heat Pump Installation</a></li>
-              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Drain Cleaning</a></li>
-              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Sewer Inspections</a></li>
-              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-600 transition-colors block">Furnace Maintenance</a></li>
+          {/* Quick Nav: Services */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-black text-gray-900 uppercase tracking-[0.15em] mb-8 pb-2 border-b border-gray-50">Our Services</h4>
+            <ul className="space-y-5 text-sm font-semibold text-gray-500">
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-700 transition-colors inline-flex items-center group"><span className="w-0 group-hover:w-2 h-0.5 bg-blue-700 mr-0 group-hover:mr-2 transition-all"></span>Emergency Repair</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-700 transition-colors inline-flex items-center group"><span className="w-0 group-hover:w-2 h-0.5 bg-blue-700 mr-0 group-hover:mr-2 transition-all"></span>Heat Pump Installation</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-700 transition-colors inline-flex items-center group"><span className="w-0 group-hover:w-2 h-0.5 bg-blue-700 mr-0 group-hover:mr-2 transition-all"></span>Drain Cleaning</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-700 transition-colors inline-flex items-center group"><span className="w-0 group-hover:w-2 h-0.5 bg-blue-700 mr-0 group-hover:mr-2 transition-all"></span>Sewer Inspections</a></li>
+              <li><a href="#services" onClick={handleScroll('#services')} className="hover:text-blue-700 transition-colors inline-flex items-center group"><span className="w-0 group-hover:w-2 h-0.5 bg-blue-700 mr-0 group-hover:mr-2 transition-all"></span>Furnace Maintenance</a></li>
             </ul>
           </div>
 
-          {/* Support */}
-          <div>
-            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Homeowner Support</h4>
-            <ul className="space-y-4 text-sm font-medium text-gray-500">
-              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-600 transition-colors block">HRS Rebate Guide</a></li>
-              <li><a href="#areas" onClick={handleScroll('#areas')} className="hover:text-blue-600 transition-colors block">Service Locations</a></li>
-              <li><a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-600 transition-colors block">Schedule Service</a></li>
-              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-600 transition-colors block">Financing Options</a></li>
-              <li><a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-600 transition-colors block">Privacy Policy</a></li>
+          {/* Quick Nav: Support */}
+          <div className="lg:col-span-2">
+            <h4 className="text-xs font-black text-gray-900 uppercase tracking-[0.15em] mb-8 pb-2 border-b border-gray-50">Homeowner Help</h4>
+            <ul className="space-y-5 text-sm font-semibold text-gray-500">
+              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-700 transition-colors">HRS Rebate Guide</a></li>
+              <li><a href="#areas" onClick={handleScroll('#areas')} className="hover:text-blue-700 transition-colors">Service Locations</a></li>
+              <li><a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-700 transition-colors">Schedule Service</a></li>
+              <li><a href="#rebates" onClick={handleScroll('#rebates')} className="hover:text-blue-700 transition-colors">Financing Options</a></li>
+              <li><a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-700 transition-colors">Privacy Policy</a></li>
             </ul>
           </div>
 
-          {/* Contact & Badge */}
-          <div className="space-y-6">
-            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Direct Dispatch</h4>
-            <div className={`p-4 rounded-2xl border flex flex-col gap-2 transition-colors duration-500 ${isEmergency ? 'bg-orange-50 border-orange-100' : 'bg-blue-50 border-blue-100'}`}>
-              <span className={`text-[10px] font-black uppercase tracking-widest ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>Emergency HotLine</span>
-              <a href="tel:18669322818" className={`text-xl font-black ${isEmergency ? 'text-orange-900' : 'text-blue-900'}`}>(866) 932-2818</a>
-              <p className="text-[10px] text-gray-400 font-bold uppercase">Average response: 18 mins</p>
+          {/* Direct Dispatch Action Section */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className={`p-8 rounded-[2rem] border transition-all duration-500 relative overflow-hidden group ${isEmergency ? 'bg-orange-50/50 border-orange-100' : 'bg-blue-50/50 border-blue-100'}`}>
+              <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl opacity-20 -mr-12 -mt-12 transition-colors duration-500 ${isEmergency ? 'bg-orange-500' : 'bg-blue-600'}`}></div>
+              
+              <div className="relative z-10">
+                <span className={`text-[10px] font-black uppercase tracking-[0.25em] block mb-2 ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>Emergency Hotline</span>
+                <a href="tel:18669322818" className={`text-3xl font-black block transition-transform group-hover:scale-105 duration-300 ${isEmergency ? 'text-orange-950' : 'text-blue-900'}`}>
+                  (866) 932-2818
+                </a>
+                <div className="flex items-center gap-2 mt-4">
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${isEmergency ? 'bg-orange-500' : 'bg-blue-600'}`}></div>
+                  <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest">Average Response: 18 Mins</p>
+                </div>
+              </div>
             </div>
-            <div className="text-[10px] text-gray-500 leading-tight">
-               4020A Sladeview Crescent Unit 6,<br/>
-               Mississauga, ON L5L 6B1, Canada
-            </div>
-            <div className="flex items-center gap-3 grayscale opacity-60">
-               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">BBB</div>
-               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">GReview</div>
-               <div className="h-8 w-12 bg-gray-100 rounded flex items-center justify-center text-[8px] font-bold">SafeWork</div>
+
+            <div className="space-y-4">
+              <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wide leading-relaxed pl-1">
+                4020A Sladeview Crescent Unit 6,<br/>
+                Mississauga, ON L5L 6B1, Canada
+              </p>
+              
+              <div className="flex items-center gap-3 pt-2">
+                {['BBB', 'GReview', 'SafeWork'].map((badge) => (
+                  <div key={badge} className="px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[9px] font-black text-gray-400 uppercase tracking-tighter hover:bg-white transition-colors cursor-default">
+                    {badge}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-widest">
+        {/* Bottom Utility Bar */}
+        <div className="pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
           <p>© 2025 Superior Plumbing & Heating Ltd. Licensed & Bonded.</p>
-          <div className="flex gap-6">
-            <a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-600 transition-colors">Terms of Service</a>
-            <a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-600 transition-colors">Careers</a>
+          <div className="flex items-center gap-8">
+            <a href="#top" onClick={handleScroll('#top')} className="hover:text-blue-700 transition-colors">Terms</a>
+            <a href="#book" onClick={handleScroll('#book')} className="hover:text-blue-700 transition-colors">Careers</a>
+            <span className="text-gray-200 select-none hidden md:inline">|</span>
             <span className="text-gray-300 select-none">Contractor ID: #SPH-2025-01</span>
           </div>
         </div>
