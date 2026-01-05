@@ -25,19 +25,69 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const prevPersonaRef = useRef<Persona>(persona);
 
-  // Robust check for process.env.API_KEY to prevent ReferenceErrors
+  // Bulletproof environment check for API Key
   const getApiKey = () => {
     try {
-      if (typeof window !== 'undefined' && (window as any).process?.env?.API_KEY) {
-        return (window as any).process.env.API_KEY;
-      }
+      // Check window.process for some pre-bundled environments
+      const win = window as any;
+      if (win.process?.env?.API_KEY) return win.process.env.API_KEY;
+      
+      // Traditional node-like process check
       if (typeof process !== 'undefined' && process.env?.API_KEY) {
         return process.env.API_KEY;
       }
     } catch (e) {
-      // Fail silently to avoid Uncaught errors
+      // Fallback silent failure
     }
     return null;
+  };
+
+  // Generates a distinct auditory cue for the active persona
+  const playActivationSound = (isEmergency: boolean) => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    const now = ctx.currentTime;
+
+    if (isEmergency) {
+      // "Superior Dispatch Radio Chirp" - High pitched, authoritative double beep
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1100, now);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+      gain.gain.linearRampToValueAtTime(0, now + 0.05);
+      
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(950, now + 0.06);
+      gain2.gain.setValueAtTime(0, now + 0.06);
+      gain2.gain.linearRampToValueAtTime(0.08, now + 0.08);
+      gain2.gain.linearRampToValueAtTime(0, now + 0.12);
+
+      osc.connect(gain).connect(ctx.destination);
+      osc2.connect(gain2).connect(ctx.destination);
+      
+      osc.start(now);
+      osc.stop(now + 0.05);
+      osc2.start(now + 0.06);
+      osc2.stop(now + 0.12);
+    } else {
+      // "Sales Advisor Concierge Chime" - Smooth ascending major interval
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3); // E5
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    }
   };
 
   const updateVisualizer = () => {
@@ -105,7 +155,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const startSession = async () => {
     const apiKey = getApiKey();
     if (!apiKey) {
-      console.warn('Superior Voice: API Key missing. Service mode inactive.');
+      console.warn('Superior Voice Core: Critical Authorization Missing.');
       return;
     }
     setIsConnecting(true);
@@ -128,6 +178,8 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         callbacks: {
           onopen: () => {
             setIsConnecting(false);
+            playActivationSound(persona === Persona.MIKE);
+            
             const source = inputCtx.createMediaStreamSource(stream);
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
             scriptProcessor.onaudioprocess = (e) => {
@@ -239,7 +291,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       <div className="flex items-center justify-between mb-8 relative z-10">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <span className={`flex h-3 w-3 rounded-full ${isActive ? 'bg-green-400 animate-live' : 'bg-white/20'}`}></span>
+            <span className={`flex h-3 w-3 rounded-full ${isActive ? (isEmergency ? 'bg-orange-200 shadow-[0_0_15px_#fff] animate-pulse' : 'bg-green-400 animate-live') : 'bg-white/20'}`}></span>
           </div>
           <div>
             <h3 className="text-sm font-black uppercase tracking-[0.2em]">
