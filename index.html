@@ -1,83 +1,32 @@
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Superior Plumbing & Heating | AI Voice Dispatch</title>
+    <title>Superior Plumbing & Heating | Enterprise AI Dispatch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-      html {
-        scroll-behavior: smooth;
-      }
-      body {
-        font-family: 'Inter', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        letter-spacing: -0.01em;
-      }
-      
-      /* Visualizer Bar Styles */
-      .v-bar {
-        width: 6px;
-        border-radius: 8px;
-        transition: height 0.1s cubic-bezier(0.17, 0.67, 0.83, 0.67), background-color 0.5s ease;
-        min-height: 4px;
-      }
-      
-      /* Melissa's Wave: Professional & Calm */
-      .v-bar-melissa {
-        background: linear-gradient(to top, #1d4ed8, #60a5fa);
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-      }
-
-      /* Mike's Wave: Urgent & Alert */
-      .v-bar-mike {
-        background: linear-gradient(to top, #c2410c, #fb923c);
-        box-shadow: 0 0 15px rgba(234, 88, 12, 0.2);
-      }
-
-      @keyframes message-slide-up {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-message {
-        animation: message-slide-up 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-      }
-
-      @keyframes live-pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.4); opacity: 0.4; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      .animate-live {
-        animation: live-pulse 2s infinite;
-      }
-
-      @keyframes emergency-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(234, 88, 12, 0.4); }
-        50% { box-shadow: 0 0 40px rgba(234, 88, 12, 0.7); }
-      }
-      .emergency-active {
-        animation: emergency-glow 1.5s infinite;
-      }
+      body { font-family: 'Inter', sans-serif; }
+      @keyframes live { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+      .animate-live { animation: live 1.5s infinite; }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
   }
 }
 </script>
 </head>
-  <body class="bg-[#F8FAFC] text-slate-900">
+<body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
-  </body>
+</body>
 </html>

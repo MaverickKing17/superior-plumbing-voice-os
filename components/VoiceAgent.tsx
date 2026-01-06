@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, FunctionDeclaration } from '@google/genai';
-import { Persona } from '../types.ts';
-import { SYSTEM_INSTRUCTIONS } from '../constants.tsx';
+import { Persona } from '../types';
+import { SYSTEM_INSTRUCTIONS } from '../constants';
 
 interface VoiceAgentProps {
   persona: Persona;
@@ -15,12 +14,9 @@ const transferToHumanTool: FunctionDeclaration = {
   name: 'transferToHuman',
   parameters: {
     type: Type.OBJECT,
-    description: 'Transfer the active voice call to a live human representative at Superior Plumbing & Heating.',
+    description: 'Transfer the active voice call to a human representative.',
     properties: {
-      reason: {
-        type: Type.STRING,
-        description: 'The reason for the transfer (e.g., persistent difficulty understanding input, customer requested human, or complex query).',
-      },
+      reason: { type: Type.STRING, description: 'The reason for the transfer.' },
     },
     required: ['reason'],
   },
@@ -29,407 +25,169 @@ const transferToHumanTool: FunctionDeclaration = {
 const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, onTranscription }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isTransferring, setIsTransferring] = useState(false);
   const [isUserTalking, setIsUserTalking] = useState(false);
   
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const inputContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const inputAnalyserRef = useRef<AnalyserNode | null>(null);
-  const inputProcessorRef = useRef<ScriptProcessorNode | null>(null);
-  const visualizerRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>(0);
-  
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
-  const prevPersonaRef = useRef<Persona>(persona);
-
-  const playActivationSound = (isEmergency: boolean) => {
-    if (!audioContextRef.current) return;
-    const ctx = audioContextRef.current;
-    const now = ctx.currentTime;
-
-    if (isEmergency) {
-      const frequencies = [1200, 1400, 1300];
-      frequencies.forEach((freq, i) => {
-        const startTime = now + (i * 0.04);
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
-        gain.gain.linearRampToValueAtTime(0, startTime + 0.03);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(startTime);
-        osc.stop(startTime + 0.03);
-      });
-    } else {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3);
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.05, now + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.4);
-    }
-  };
-
-  const updateVisualizer = () => {
-    if (!visualizerRef.current) return;
-    const isEmergency = persona === Persona.MIKE;
-    const bars = visualizerRef.current.children;
-
-    const activeAnalyser = isSpeaking ? analyserRef.current : inputAnalyserRef.current;
-
-    if (activeAnalyser) {
-      const dataArray = new Uint8Array(activeAnalyser.frequencyBinCount);
-      activeAnalyser.getByteFrequencyData(dataArray);
-      
-      let totalVolume = 0;
-      for (let i = 0; i < bars.length; i++) {
-        const bar = bars[i] as HTMLElement;
-        const val = dataArray[i * 2] || 0;
-        totalVolume += val;
-        
-        const height = Math.max(4, (val / 255) * 56);
-        const intensity = val / 255;
-        
-        bar.style.height = `${height}px`;
-        
-        if (isEmergency) {
-          const r = 194 + (intensity * 61);
-          const g = 65 + (intensity * 150);
-          const b = 12 + (intensity * 60);
-          bar.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-          bar.style.boxShadow = `0 0 ${8 + intensity * 24}px rgba(234, 88, 12, ${0.3 + intensity * 0.5})`;
-        } else {
-          const r = 29 + (intensity * 100);
-          const g = 78 + (intensity * 177);
-          const b = 216 + (intensity * 39);
-          bar.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-          bar.style.boxShadow = `0 0 ${8 + intensity * 24}px rgba(59, 130, 246, ${0.3 + intensity * 0.5})`;
-        }
-      }
-
-      const avgVolume = totalVolume / bars.length;
-      const pulseScale = 1 + (avgVolume / 255) * 0.15;
-      visualizerRef.current.style.transform = `scale(${pulseScale})`;
-      setIsUserTalking(avgVolume > 15 && !isSpeaking);
-    } else {
-      for (let i = 0; i < bars.length; i++) {
-        const bar = bars[i] as HTMLElement;
-        bar.style.height = '4px';
-      }
-    }
-
-    animationFrameRef.current = requestAnimationFrame(updateVisualizer);
-  };
 
   const decode = (base64: string) => {
-    try {
-      const binaryString = atob(base64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-      return bytes;
-    } catch (e) {
-      return new Uint8Array(0);
-    }
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+    return bytes;
   };
 
-  const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number): Promise<AudioBuffer> => {
+  const encode = (bytes: Uint8Array) => {
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
+
+  const decodeAudioData = async (data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number) => {
     const dataInt16 = new Int16Array(data.buffer);
     const frameCount = dataInt16.length / numChannels;
     const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
     for (let channel = 0; channel < numChannels; channel++) {
       const channelData = buffer.getChannelData(channel);
-      for (let i = 0; i < frameCount; i++) {
-        channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-      }
+      for (let i = 0; i < frameCount; i++) channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
     }
     return buffer;
   };
 
-  const encode = (bytes: Uint8Array) => {
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  };
-
   const createBlob = (data: Float32Array) => {
     const int16 = new Int16Array(data.length);
-    for (let i = 0; i < data.length; i++) {
-      int16[i] = data[i] * 32768;
-    }
-    return {
-      data: encode(new Uint8Array(int16.buffer)),
-      mimeType: 'audio/pcm;rate=16000',
-    };
+    for (let i = 0; i < data.length; i++) int16[i] = data[i] * 32768;
+    return { data: encode(new Uint8Array(int16.buffer)), mimeType: 'audio/pcm;rate=16000' };
   };
 
   const startSession = async () => {
     const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      console.error('Superior Voice Core: API_KEY is missing from environment.');
-      onToggle();
-      return;
-    }
-    
+    if (!apiKey) return;
     setIsConnecting(true);
-    setIsTransferring(false);
-    
+
     try {
       const ai = new GoogleGenAI({ apiKey });
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-      
-      await inputCtx.resume();
-      await outputCtx.resume();
-      
       inputContextRef.current = inputCtx;
       audioContextRef.current = outputCtx;
 
-      const analyser = outputCtx.createAnalyser();
-      analyser.fftSize = 64; 
-      analyserRef.current = analyser;
-      analyser.connect(outputCtx.destination);
-      
-      const inputAnalyser = inputCtx.createAnalyser();
-      inputAnalyser.fftSize = 64;
-      inputAnalyserRef.current = inputAnalyser;
-
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
             setIsConnecting(false);
-            playActivationSound(persona === Persona.MIKE);
-            
             const source = inputCtx.createMediaStreamSource(stream);
-            source.connect(inputAnalyser);
-
-            const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            inputProcessorRef.current = scriptProcessor;
-
-            scriptProcessor.onaudioprocess = (e) => {
+            const processor = inputCtx.createScriptProcessor(4096, 1, 1);
+            processor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
-              const pcmBlob = createBlob(inputData);
-              sessionPromise.then(session => {
-                session.sendRealtimeInput({ media: pcmBlob });
-              });
+              sessionPromise.then(s => s.sendRealtimeInput({ media: createBlob(inputData) }));
             };
-            
-            source.connect(scriptProcessor);
-            scriptProcessor.connect(inputCtx.destination);
-            animationFrameRef.current = requestAnimationFrame(updateVisualizer);
+            source.connect(processor);
+            processor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
             if (message.toolCall) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'transferToHuman') {
-                  setIsTransferring(true);
                   sessionPromise.then(s => s.sendToolResponse({
-                    functionResponses: { id: fc.id, name: fc.name, response: { status: 'success' } }
+                    functionResponses: { id: fc.id, name: fc.name, response: { result: 'ok' } }
                   }));
-                  setTimeout(() => onToggle(), 3000);
+                  onToggle(); // Close session
                 }
               }
             }
-
-            const parts = message.serverContent?.modelTurn?.parts;
-            if (parts) {
-              for (const part of parts) {
-                if (part.inlineData?.data) {
-                  const audioCtx = audioContextRef.current;
-                  if (audioCtx && analyserRef.current) {
-                    nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioCtx.currentTime);
-                    const audioBuffer = await decodeAudioData(decode(part.inlineData.data), audioCtx, 24000, 1);
-                    const source = audioCtx.createBufferSource();
-                    source.buffer = audioBuffer;
-                    source.connect(analyserRef.current);
-                    source.start(nextStartTimeRef.current);
-                    nextStartTimeRef.current += audioBuffer.duration;
-                    sourcesRef.current.add(source);
-                    setIsSpeaking(true);
-                    source.onended = () => {
-                      sourcesRef.current.delete(source);
-                      setIsSpeaking(sourcesRef.current.size > 0);
-                    };
-                  }
-                }
+            if (message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data) {
+              const audioCtx = audioContextRef.current;
+              if (audioCtx) {
+                const buffer = await decodeAudioData(decode(message.serverContent.modelTurn.parts[0].inlineData.data), audioCtx, 24000, 1);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioCtx.currentTime);
+                source.connect(audioCtx.destination);
+                source.start(nextStartTimeRef.current);
+                nextStartTimeRef.current += buffer.duration;
+                sourcesRef.current.add(source);
+                setIsSpeaking(true);
+                source.onended = () => {
+                  sourcesRef.current.delete(source);
+                  if (sourcesRef.current.size === 0) setIsSpeaking(false);
+                };
               }
             }
-
-            if (message.serverContent?.inputTranscription) {
-              onTranscription(message.serverContent.inputTranscription.text, 'user');
-            }
-            if (message.serverContent?.outputTranscription) {
-              onTranscription(message.serverContent.outputTranscription.text, 'agent');
-            }
+            if (message.serverContent?.inputTranscription) onTranscription(message.serverContent.inputTranscription.text, 'user');
+            if (message.serverContent?.outputTranscription) onTranscription(message.serverContent.outputTranscription.text, 'agent');
           },
-          onerror: (e) => {
-            console.error('Superior Voice Core Stream Error:', e);
-            setIsConnecting(false);
-          },
-          onclose: () => {
-            setIsConnecting(false);
-            setIsSpeaking(false);
-            cancelAnimationFrame(animationFrameRef.current);
-          }
+          onerror: (e) => { console.error(e); setIsConnecting(false); },
+          onclose: () => setIsConnecting(false)
         },
         config: {
           responseModalities: [Modality.AUDIO],
           systemInstruction: SYSTEM_INSTRUCTIONS[persona],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { 
-                voiceName: persona === Persona.MELISSA ? 'Kore' : 'Fenrir' 
-              }
-            }
-          },
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: persona === Persona.MELISSA ? 'Kore' : 'Fenrir' } } },
           tools: [{ functionDeclarations: [transferToHumanTool] }],
           inputAudioTranscription: {},
           outputAudioTranscription: {}
         }
       });
-
       sessionRef.current = await sessionPromise;
     } catch (err) {
-      console.error('Superior Voice Core Session Error:', err);
+      console.error(err);
       setIsConnecting(false);
     }
   };
 
   const stopSession = () => {
-    if (sessionRef.current) {
-      try { sessionRef.current.close(); } catch(e) {}
-      sessionRef.current = null;
-    }
-    if (inputProcessorRef.current) {
-      inputProcessorRef.current.disconnect();
-      inputProcessorRef.current = null;
-    }
+    if (sessionRef.current) sessionRef.current.close();
     [audioContextRef, inputContextRef].forEach(ref => {
-      if (ref.current) {
-        try { ref.current.close(); } catch(e) {}
-        ref.current = null;
-      }
+      if (ref.current) ref.current.close();
+      ref.current = null;
     });
-    cancelAnimationFrame(animationFrameRef.current);
+    sourcesRef.current.forEach(s => s.stop());
+    sourcesRef.current.clear();
     setIsSpeaking(false);
     setIsUserTalking(false);
   };
 
   useEffect(() => {
-    if (isActive) {
-      startSession();
-    } else {
-      stopSession();
-    }
+    if (isActive) startSession(); else stopSession();
     return () => stopSession();
-  }, [isActive]);
-
-  useEffect(() => {
-    if (prevPersonaRef.current !== persona) {
-      if (isActive) {
-        stopSession();
-        startSession();
-      }
-      prevPersonaRef.current = persona;
-    }
-  }, [persona, isActive]);
+  }, [isActive, persona]);
 
   const isEmergency = persona === Persona.MIKE;
 
   return (
-    <div className={`relative overflow-hidden p-6 rounded-[2rem] shadow-2xl transition-all duration-700 border-2 ${
-      isEmergency ? 'bg-orange-600 border-orange-400 shadow-orange-950/20' : 'bg-blue-900 border-blue-700 shadow-blue-950/20'
-    } text-white`}>
-      
-      <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 transition-colors duration-700 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}></div>
-
-      <div className="flex items-center justify-between mb-8 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <span className={`flex h-3 w-3 rounded-full ${isActive ? (isEmergency ? 'bg-orange-200 shadow-[0_0_15px_#fff] animate-pulse' : 'bg-green-400 animate-live') : 'bg-white/20'}`}></span>
-          </div>
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-[0.2em]">
-              {isEmergency ? 'Mike (Emergency)' : 'Melissa (Sales)'}
-            </h3>
-            <p className="text-[10px] font-bold opacity-50 uppercase tracking-tighter">Enterprise Audio Protocol</p>
-          </div>
-        </div>
-        <div className={`px-2 py-1 rounded bg-white/10 text-[10px] font-black uppercase tracking-widest border border-white/10`}>
-           Live
-        </div>
+    <div className={`p-8 rounded-[2rem] shadow-2xl transition-all duration-700 border-2 ${isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-900 border-blue-700'} text-white`}>
+      <div className="text-center mb-8">
+        <h3 className="text-sm font-black uppercase tracking-widest">{isEmergency ? 'Mike (Emergency)' : 'Melissa (Sales)'}</h3>
+        <p className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Superior Voice Protocol</p>
       </div>
 
-      <div className="flex flex-col items-center py-4 relative z-10">
-        {isTransferring ? (
-          <div className="h-20 flex flex-col items-center justify-center animate-pulse">
-            <p className="text-lg font-black uppercase tracking-[0.1em]">Transferring to Human...</p>
-            <p className="text-[10px] opacity-70">Securing next available agent</p>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center w-full">
-            <div ref={visualizerRef} className="h-20 flex items-center justify-center gap-1.5 mb-2 transition-transform duration-75 ease-out">
-              {[...Array(16)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="v-bar transition-all duration-100 ease-out"
-                  style={{ height: '4px' }}
-                ></div>
-              ))}
-            </div>
-            <div className={`text-[9px] font-black uppercase tracking-widest mb-6 transition-all duration-300 ${isUserTalking ? 'text-green-300 scale-110' : 'text-white/30'}`}>
-              {isUserTalking ? 'Voice Input Detected' : (isActive ? 'System Listening' : 'Awaiting Link')}
-            </div>
-          </div>
-        )}
+      <div className="flex flex-col items-center py-4">
+        <div className="h-16 flex items-center justify-center gap-1.5 mb-8">
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className={`w-1 rounded-full transition-all duration-200 ${isActive ? 'bg-white' : 'bg-white/10'}`} style={{ height: isSpeaking ? `${Math.random() * 40 + 5}px` : '4px' }}></div>
+          ))}
+        </div>
 
-        <button 
-          onClick={onToggle}
-          className={`relative group transition-all duration-500 transform active:scale-95 ${isActive ? 'scale-110' : ''}`}
-        >
-           <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-500 opacity-50 ${isActive ? (isEmergency ? 'bg-orange-400' : 'bg-blue-400') : 'bg-black/40'}`}></div>
-           
-           <div className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 border-4 shadow-2xl ${
-             isActive 
-               ? 'bg-white text-blue-900 border-white' 
-               : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-           }`}>
-             {isConnecting ? (
-               <div className={`w-10 h-10 border-4 rounded-full animate-spin ${isActive ? 'border-blue-900 border-t-transparent' : 'border-white border-t-transparent'}`}></div>
-             ) : (
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-               </svg>
-             )}
-           </div>
+        <button onClick={onToggle} className={`relative w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 shadow-3xl ${isActive ? 'bg-white text-blue-900 scale-110' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+          {isConnecting ? (
+            <div className="w-10 h-10 border-4 border-current border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          )}
         </button>
 
-        <div className="mt-8 text-center space-y-1">
-          <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70">
-            {isTransferring ? 'CALL HANDOFF' : (isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : (isUserTalking ? 'Hearing You' : 'Awaiting Input')) : 'Tap to Initiate'))}
-          </p>
-          <div className="flex justify-center gap-1">
-             <div className={`w-1 h-1 rounded-full bg-white transition-opacity ${isActive ? 'animate-bounce' : 'opacity-20'}`}></div>
-             <div className={`w-1 h-1 rounded-full bg-white transition-opacity delay-75 ${isActive ? 'animate-bounce' : 'opacity-20'}`}></div>
-             <div className={`w-1 h-1 rounded-full bg-white transition-opacity delay-150 ${isActive ? 'animate-bounce' : 'opacity-20'}`}></div>
-          </div>
-        </div>
+        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] opacity-70">
+          {isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Tap to Initiate')}
+        </p>
       </div>
     </div>
   );

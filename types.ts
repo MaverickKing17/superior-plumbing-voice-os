@@ -12,10 +12,6 @@ export interface Message {
   persona: Persona;
 }
 
-export interface VoiceConfig {
-  voiceName: 'Puck' | 'Charon' | 'Kore' | 'Fenrir' | 'Zephyr';
-}
-
 export interface ServiceItem {
   title: string;
   description: string;
