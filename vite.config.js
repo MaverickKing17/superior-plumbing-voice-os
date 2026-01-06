@@ -1,12 +1,15 @@
 
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  // This section allows the app to run on Render.com and other external hosts
+  plugins: [react()],
   server: {
     allowedHosts: true,
   },
   preview: {
     allowedHosts: true,
+    port: 10000,
+    host: true
   }
 });
