@@ -37,6 +37,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const inputContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const inputAnalyserRef = useRef<AnalyserNode | null>(null);
+  const inputProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const visualizerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>(0);
   
@@ -81,27 +82,50 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   const updateVisualizer = () => {
     if (!visualizerRef.current) return;
-    
-    // Agent Output Visualizer
-    if (analyserRef.current) {
-      const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-      analyserRef.current.getByteFrequencyData(dataArray);
-      const bars = visualizerRef.current.children;
+    const isEmergency = persona === Persona.MIKE;
+    const bars = visualizerRef.current.children;
+
+    const activeAnalyser = isSpeaking ? analyserRef.current : inputAnalyserRef.current;
+
+    if (activeAnalyser) {
+      const dataArray = new Uint8Array(activeAnalyser.frequencyBinCount);
+      activeAnalyser.getByteFrequencyData(dataArray);
+      
+      let totalVolume = 0;
       for (let i = 0; i < bars.length; i++) {
         const bar = bars[i] as HTMLElement;
         const val = dataArray[i * 2] || 0;
-        const height = Math.max(4, (val / 255) * 48);
+        totalVolume += val;
+        
+        const height = Math.max(4, (val / 255) * 56);
+        const intensity = val / 255;
+        
         bar.style.height = `${height}px`;
+        
+        if (isEmergency) {
+          const r = 194 + (intensity * 61);
+          const g = 65 + (intensity * 150);
+          const b = 12 + (intensity * 60);
+          bar.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+          bar.style.boxShadow = `0 0 ${8 + intensity * 24}px rgba(234, 88, 12, ${0.3 + intensity * 0.5})`;
+        } else {
+          const r = 29 + (intensity * 100);
+          const g = 78 + (intensity * 177);
+          const b = 216 + (intensity * 39);
+          bar.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+          bar.style.boxShadow = `0 0 ${8 + intensity * 24}px rgba(59, 130, 246, ${0.3 + intensity * 0.5})`;
+        }
       }
-    }
 
-    // Input Detection for UI feedback
-    if (inputAnalyserRef.current) {
-      const dataArray = new Uint8Array(inputAnalyserRef.current.frequencyBinCount);
-      inputAnalyserRef.current.getByteFrequencyData(dataArray);
-      const sum = dataArray.reduce((a, b) => a + b, 0);
-      const avg = sum / dataArray.length;
-      setIsUserTalking(avg > 15);
+      const avgVolume = totalVolume / bars.length;
+      const pulseScale = 1 + (avgVolume / 255) * 0.15;
+      visualizerRef.current.style.transform = `scale(${pulseScale})`;
+      setIsUserTalking(avgVolume > 15 && !isSpeaking);
+    } else {
+      for (let i = 0; i < bars.length; i++) {
+        const bar = bars[i] as HTMLElement;
+        bar.style.height = '4px';
+      }
     }
 
     animationFrameRef.current = requestAnimationFrame(updateVisualizer);
@@ -154,10 +178,14 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   const startSession = async () => {
     const apiKey = process.env.API_KEY;
+    console.debug("Superior Voice Core: Initializing connection. Key Present:", !!apiKey);
+    
     if (!apiKey) {
-      console.error('Superior Voice Core: Authorization Key Missing.');
+      console.error('Superior Voice Core: API_KEY is missing from environment. Voice features disabled.');
+      onToggle(); // Close state if no key
       return;
     }
+    
     setIsConnecting(true);
     setIsTransferring(false);
     
@@ -166,7 +194,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
-      // Ensure contexts are running (critical for browser security)
+      // Ensure contexts are fully resumed (Crucial for Chrome/Vercel)
       await inputCtx.resume();
       await outputCtx.resume();
       
@@ -188,27 +216,30 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
         model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         callbacks: {
           onopen: () => {
-            console.debug('Superior Voice Core: Connection Established.');
+            console.debug('Superior Voice Core: WebSocket Tunnel Established.');
             setIsConnecting(false);
             playActivationSound(persona === Persona.MIKE);
             
             const source = inputCtx.createMediaStreamSource(stream);
-            source.connect(inputAnalyser); // For local visualization
+            source.connect(inputAnalyser);
 
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
+            inputProcessorRef.current = scriptProcessor; // Keep reference to prevent GC
+
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
               sessionPromise.then(session => {
                 if (session) session.sendRealtimeInput({ media: pcmBlob });
-              }).catch(() => {});
+              }).catch((err) => console.error("Superior Audio Pipe Error:", err));
             };
+            
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
             animationFrameRef.current = requestAnimationFrame(updateVisualizer);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // 1. Tool Handling
+            // Process tool calls (like transferToHuman)
             if (message.toolCall) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'transferToHuman') {
@@ -216,12 +247,12 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
                   sessionPromise.then(s => s.sendToolResponse({
                     functionResponses: { id: fc.id, name: fc.name, response: { status: 'success' } }
                   }));
-                  setTimeout(() => onToggle(), 2500);
+                  setTimeout(() => onToggle(), 3000);
                 }
               }
             }
 
-            // 2. Audio Processing (Support for multi-part messages)
+            // Process audio segments
             const parts = message.serverContent?.modelTurn?.parts;
             if (parts) {
               for (const part of parts) {
@@ -246,7 +277,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               }
             }
 
-            // 3. Transcription Handling
+            // Transcriptions
             if (message.serverContent?.inputTranscription) {
               onTranscription(message.serverContent.inputTranscription.text, 'user');
             }
@@ -255,10 +286,11 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             }
           },
           onerror: (e) => {
-            console.error('Superior Voice Core: Runtime Error', e);
+            console.error('Superior Voice Core: Stream Error Occurred.', e);
             setIsConnecting(false);
           },
           onclose: () => {
+            console.debug('Superior Voice Core: Connection Closed.');
             setIsConnecting(false);
             setIsSpeaking(false);
             cancelAnimationFrame(animationFrameRef.current);
@@ -282,7 +314,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
       sessionRef.current = await sessionPromise;
     } catch (err) {
-      console.error('Superior Voice Core: Initialization Failed', err);
+      console.error('Superior Voice Core: Failed to initialize session.', err);
       setIsConnecting(false);
     }
   };
@@ -291,6 +323,10 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
     if (sessionRef.current) {
       try { sessionRef.current.close(); } catch(e) {}
       sessionRef.current = null;
+    }
+    if (inputProcessorRef.current) {
+      inputProcessorRef.current.disconnect();
+      inputProcessorRef.current = null;
     }
     [audioContextRef, inputContextRef].forEach(ref => {
       if (ref.current) {
@@ -326,7 +362,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   return (
     <div className={`relative overflow-hidden p-6 rounded-[2rem] shadow-2xl transition-all duration-700 border-2 ${
-      isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-900 border-blue-700'
+      isEmergency ? 'bg-orange-600 border-orange-400 shadow-orange-950/20' : 'bg-blue-900 border-blue-700 shadow-blue-950/20'
     } text-white`}>
       
       <div className={`absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-20 transition-colors duration-700 ${isEmergency ? 'bg-orange-200' : 'bg-blue-200'}`}></div>
@@ -350,23 +386,23 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
       <div className="flex flex-col items-center py-4 relative z-10">
         {isTransferring ? (
-          <div className="h-16 flex flex-col items-center justify-center animate-pulse">
+          <div className="h-20 flex flex-col items-center justify-center animate-pulse">
             <p className="text-lg font-black uppercase tracking-[0.1em]">Transferring to Human...</p>
             <p className="text-[10px] opacity-70">Securing next available agent</p>
           </div>
         ) : (
           <div className="flex flex-col items-center w-full">
-            <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-2">
+            <div ref={visualizerRef} className="h-20 flex items-center justify-center gap-1.5 mb-2 transition-transform duration-75 ease-out">
               {[...Array(16)].map((_, i) => (
                 <div 
                   key={i} 
-                  className={`v-bar ${isEmergency ? 'v-bar-mike' : 'v-bar-melissa'}`}
+                  className="v-bar transition-all duration-100 ease-out"
                   style={{ height: '4px' }}
                 ></div>
               ))}
             </div>
             <div className={`text-[9px] font-black uppercase tracking-widest mb-6 transition-all duration-300 ${isUserTalking ? 'text-green-300 scale-110' : 'text-white/30'}`}>
-              {isUserTalking ? 'Voice Input Detected' : 'Listening...'}
+              {isUserTalking ? 'Voice Input Detected' : (isActive ? 'System Listening' : 'Awaiting Link')}
             </div>
           </div>
         )}
