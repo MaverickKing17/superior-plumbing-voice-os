@@ -178,11 +178,9 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
   const startSession = async () => {
     const apiKey = process.env.API_KEY;
-    console.debug("Superior Voice Core: Initializing connection. Key Present:", !!apiKey);
-    
     if (!apiKey) {
-      console.error('Superior Voice Core: API_KEY is missing from environment. Voice features disabled.');
-      onToggle(); // Close state if no key
+      console.error('Superior Voice Core: API_KEY is missing from environment.');
+      onToggle();
       return;
     }
     
@@ -194,7 +192,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
-      // Ensure contexts are fully resumed (Crucial for Chrome/Vercel)
       await inputCtx.resume();
       await outputCtx.resume();
       
@@ -213,10 +210,9 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
-            console.debug('Superior Voice Core: WebSocket Tunnel Established.');
             setIsConnecting(false);
             playActivationSound(persona === Persona.MIKE);
             
@@ -224,14 +220,14 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             source.connect(inputAnalyser);
 
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            inputProcessorRef.current = scriptProcessor; // Keep reference to prevent GC
+            inputProcessorRef.current = scriptProcessor;
 
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
               sessionPromise.then(session => {
-                if (session) session.sendRealtimeInput({ media: pcmBlob });
-              }).catch((err) => console.error("Superior Audio Pipe Error:", err));
+                session.sendRealtimeInput({ media: pcmBlob });
+              });
             };
             
             source.connect(scriptProcessor);
@@ -239,7 +235,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             animationFrameRef.current = requestAnimationFrame(updateVisualizer);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Process tool calls (like transferToHuman)
             if (message.toolCall) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'transferToHuman') {
@@ -252,7 +247,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               }
             }
 
-            // Process audio segments
             const parts = message.serverContent?.modelTurn?.parts;
             if (parts) {
               for (const part of parts) {
@@ -277,7 +271,6 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               }
             }
 
-            // Transcriptions
             if (message.serverContent?.inputTranscription) {
               onTranscription(message.serverContent.inputTranscription.text, 'user');
             }
@@ -286,11 +279,10 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             }
           },
           onerror: (e) => {
-            console.error('Superior Voice Core: Stream Error Occurred.', e);
+            console.error('Superior Voice Core Stream Error:', e);
             setIsConnecting(false);
           },
           onclose: () => {
-            console.debug('Superior Voice Core: Connection Closed.');
             setIsConnecting(false);
             setIsSpeaking(false);
             cancelAnimationFrame(animationFrameRef.current);
@@ -314,7 +306,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
       sessionRef.current = await sessionPromise;
     } catch (err) {
-      console.error('Superior Voice Core: Failed to initialize session.', err);
+      console.error('Superior Voice Core Session Error:', err);
       setIsConnecting(false);
     }
   };
