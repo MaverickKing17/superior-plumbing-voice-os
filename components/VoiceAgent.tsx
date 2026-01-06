@@ -30,27 +30,19 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isTransferring, setIsTransferring] = useState(false);
+  const [isUserTalking, setIsUserTalking] = useState(false);
   
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const inputContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
+  const inputAnalyserRef = useRef<AnalyserNode | null>(null);
   const visualizerRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>(0);
   
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const prevPersonaRef = useRef<Persona>(persona);
-
-  const getApiKey = () => {
-    try {
-      const win = window as any;
-      if (win.process?.env?.API_KEY) return win.process.env.API_KEY;
-      if (typeof process !== 'undefined' && process.env?.API_KEY) {
-        return process.env.API_KEY;
-      }
-    } catch (e) {}
-    return null;
-  };
 
   const playActivationSound = (isEmergency: boolean) => {
     if (!audioContextRef.current) return;
@@ -88,16 +80,30 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   };
 
   const updateVisualizer = () => {
-    if (!analyserRef.current || !visualizerRef.current) return;
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-    analyserRef.current.getByteFrequencyData(dataArray);
-    const bars = visualizerRef.current.children;
-    for (let i = 0; i < bars.length; i++) {
-      const bar = bars[i] as HTMLElement;
-      const val = dataArray[i * 2] || 0;
-      const height = Math.max(4, (val / 255) * 48);
-      bar.style.height = `${height}px`;
+    if (!visualizerRef.current) return;
+    
+    // Agent Output Visualizer
+    if (analyserRef.current) {
+      const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+      analyserRef.current.getByteFrequencyData(dataArray);
+      const bars = visualizerRef.current.children;
+      for (let i = 0; i < bars.length; i++) {
+        const bar = bars[i] as HTMLElement;
+        const val = dataArray[i * 2] || 0;
+        const height = Math.max(4, (val / 255) * 48);
+        bar.style.height = `${height}px`;
+      }
     }
+
+    // Input Detection for UI feedback
+    if (inputAnalyserRef.current) {
+      const dataArray = new Uint8Array(inputAnalyserRef.current.frequencyBinCount);
+      inputAnalyserRef.current.getByteFrequencyData(dataArray);
+      const sum = dataArray.reduce((a, b) => a + b, 0);
+      const avg = sum / dataArray.length;
+      setIsUserTalking(avg > 15);
+    }
+
     animationFrameRef.current = requestAnimationFrame(updateVisualizer);
   };
 
@@ -147,9 +153,9 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
   };
 
   const startSession = async () => {
-    const apiKey = getApiKey();
+    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      console.warn('Superior Voice Core: Critical Authorization Missing.');
+      console.error('Superior Voice Core: Authorization Key Missing.');
       return;
     }
     setIsConnecting(true);
@@ -160,22 +166,35 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
       const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       
+      // Ensure contexts are running (critical for browser security)
+      await inputCtx.resume();
+      await outputCtx.resume();
+      
+      inputContextRef.current = inputCtx;
+      audioContextRef.current = outputCtx;
+
       const analyser = outputCtx.createAnalyser();
       analyser.fftSize = 64; 
       analyserRef.current = analyser;
       analyser.connect(outputCtx.destination);
       
-      audioContextRef.current = outputCtx;
+      const inputAnalyser = inputCtx.createAnalyser();
+      inputAnalyser.fftSize = 64;
+      inputAnalyserRef.current = inputAnalyser;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         callbacks: {
           onopen: () => {
+            console.debug('Superior Voice Core: Connection Established.');
             setIsConnecting(false);
             playActivationSound(persona === Persona.MIKE);
             
             const source = inputCtx.createMediaStreamSource(stream);
+            source.connect(inputAnalyser); // For local visualization
+
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
@@ -189,41 +208,45 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             animationFrameRef.current = requestAnimationFrame(updateVisualizer);
           },
           onmessage: async (message: LiveServerMessage) => {
+            // 1. Tool Handling
             if (message.toolCall) {
               for (const fc of message.toolCall.functionCalls) {
                 if (fc.name === 'transferToHuman') {
-                  console.debug('TRANSFER TO HUMAN INITIATED: ', fc.args.reason);
                   setIsTransferring(true);
-                  // Respond to the tool to clear model state before closing
                   sessionPromise.then(s => s.sendToolResponse({
-                    functionResponses: { id: fc.id, name: fc.name, response: { status: 'success', info: 'Transfer active' } }
+                    functionResponses: { id: fc.id, name: fc.name, response: { status: 'success' } }
                   }));
-                  // Hang up after short delay so user hears the final phrase
-                  setTimeout(() => {
-                    onToggle(); 
-                  }, 3000);
+                  setTimeout(() => onToggle(), 2500);
                 }
               }
             }
 
-            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (base64Audio && audioContextRef.current && analyserRef.current) {
-              const audioCtx = audioContextRef.current;
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioCtx.currentTime);
-              const audioBuffer = await decodeAudioData(decode(base64Audio), audioCtx, 24000, 1);
-              const source = audioCtx.createBufferSource();
-              source.buffer = audioBuffer;
-              source.connect(analyserRef.current);
-              source.start(nextStartTimeRef.current);
-              nextStartTimeRef.current += audioBuffer.duration;
-              sourcesRef.current.add(source);
-              setIsSpeaking(true);
-              source.onended = () => {
-                sourcesRef.current.delete(source);
-                setIsSpeaking(sourcesRef.current.size > 0);
-              };
+            // 2. Audio Processing (Support for multi-part messages)
+            const parts = message.serverContent?.modelTurn?.parts;
+            if (parts) {
+              for (const part of parts) {
+                if (part.inlineData?.data) {
+                  const audioCtx = audioContextRef.current;
+                  if (audioCtx && analyserRef.current) {
+                    nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioCtx.currentTime);
+                    const audioBuffer = await decodeAudioData(decode(part.inlineData.data), audioCtx, 24000, 1);
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(analyserRef.current);
+                    source.start(nextStartTimeRef.current);
+                    nextStartTimeRef.current += audioBuffer.duration;
+                    sourcesRef.current.add(source);
+                    setIsSpeaking(true);
+                    source.onended = () => {
+                      sourcesRef.current.delete(source);
+                      setIsSpeaking(sourcesRef.current.size > 0);
+                    };
+                  }
+                }
+              }
             }
 
+            // 3. Transcription Handling
             if (message.serverContent?.inputTranscription) {
               onTranscription(message.serverContent.inputTranscription.text, 'user');
             }
@@ -231,7 +254,10 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
               onTranscription(message.serverContent.outputTranscription.text, 'agent');
             }
           },
-          onerror: () => setIsConnecting(false),
+          onerror: (e) => {
+            console.error('Superior Voice Core: Runtime Error', e);
+            setIsConnecting(false);
+          },
           onclose: () => {
             setIsConnecting(false);
             setIsSpeaking(false);
@@ -256,6 +282,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
       sessionRef.current = await sessionPromise;
     } catch (err) {
+      console.error('Superior Voice Core: Initialization Failed', err);
       setIsConnecting(false);
     }
   };
@@ -265,12 +292,15 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
       try { sessionRef.current.close(); } catch(e) {}
       sessionRef.current = null;
     }
-    if (audioContextRef.current) {
-      try { audioContextRef.current.close(); } catch(e) {}
-      audioContextRef.current = null;
-    }
+    [audioContextRef, inputContextRef].forEach(ref => {
+      if (ref.current) {
+        try { ref.current.close(); } catch(e) {}
+        ref.current = null;
+      }
+    });
     cancelAnimationFrame(animationFrameRef.current);
     setIsSpeaking(false);
+    setIsUserTalking(false);
   };
 
   useEffect(() => {
@@ -325,14 +355,19 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
             <p className="text-[10px] opacity-70">Securing next available agent</p>
           </div>
         ) : (
-          <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-8">
-            {[...Array(16)].map((_, i) => (
-              <div 
-                key={i} 
-                className={`v-bar ${isEmergency ? 'v-bar-mike' : 'v-bar-melissa'}`}
-                style={{ height: '4px' }}
-              ></div>
-            ))}
+          <div className="flex flex-col items-center w-full">
+            <div ref={visualizerRef} className="h-16 flex items-center justify-center gap-1.5 mb-2">
+              {[...Array(16)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className={`v-bar ${isEmergency ? 'v-bar-mike' : 'v-bar-melissa'}`}
+                  style={{ height: '4px' }}
+                ></div>
+              ))}
+            </div>
+            <div className={`text-[9px] font-black uppercase tracking-widest mb-6 transition-all duration-300 ${isUserTalking ? 'text-green-300 scale-110' : 'text-white/30'}`}>
+              {isUserTalking ? 'Voice Input Detected' : 'Listening...'}
+            </div>
           </div>
         )}
 
@@ -359,7 +394,7 @@ const VoiceAgent: React.FC<VoiceAgentProps> = ({ persona, isActive, onToggle, on
 
         <div className="mt-8 text-center space-y-1">
           <p className="text-[10px] font-black tracking-[0.3em] uppercase opacity-70">
-            {isTransferring ? 'CALL HANDOFF' : (isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Tap to Initiate'))}
+            {isTransferring ? 'CALL HANDOFF' : (isConnecting ? 'Establishing Line...' : (isActive ? (isSpeaking ? 'Agent Speaking' : (isUserTalking ? 'Hearing You' : 'Awaiting Input')) : 'Tap to Initiate'))}
           </p>
           <div className="flex justify-center gap-1">
              <div className={`w-1 h-1 rounded-full bg-white transition-opacity ${isActive ? 'animate-bounce' : 'opacity-20'}`}></div>
