@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Persona } from '../types';
 
@@ -18,11 +17,15 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
 
   /**
-   * TODO: PASTE YOUR VAPI CREDENTIALS BELOW
-   * These can be found in your Vapi Dashboard (vapi.ai)
+   * VAPI CONFIGURATION
+   * Your Public Key and Sarah's Agent ID are now integrated.
    */
-  const VAPI_PUBLIC_KEY = "YOUR_VAPI_PUBLIC_KEY_HERE";
-  const VAPI_AGENT_ID = "YOUR_VAPI_AGENT_ID_HERE";
+  const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
+  
+  const AGENT_IDS = {
+    [Persona.SARAH]: "d8d63623-4803-4707-acd5-bfba01619825",
+    [Persona.MIKE]: "PASTE_MIKE_AGENT_ID_HERE"    // Please paste Mike's Agent ID here when available
+  };
 
   useEffect(() => {
     // Vapi Event Listeners
@@ -51,24 +54,27 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     } else if (!isActive && callStatus === 'active') {
       stopVapiCall();
     }
-  }, [isActive]);
+  }, [isActive, persona]); // Re-run if persona changes while call is supposedly active
 
   const startVapiCall = async () => {
     if (!window.vapi) {
-      console.warn("Vapi SDK not yet initialized. Please ensure the script in index.html is loading correctly.");
+      console.warn("Vapi SDK not yet initialized.");
       onToggle();
       return;
     }
     
-    if (VAPI_PUBLIC_KEY === "YOUR_VAPI_PUBLIC_KEY_HERE") {
-      alert("Please configure your Vapi Public Key and Agent ID in VapiAgent.tsx");
+    const currentAgentId = AGENT_IDS[persona];
+
+    if (!currentAgentId || currentAgentId.includes("PASTE_")) {
+      console.error(`Agent ID for ${persona} not configured.`);
+      alert(`Please configure the Vapi Agent ID for ${persona === Persona.SARAH ? 'Sarah' : 'Mike'} in VapiAgent.tsx`);
       onToggle();
       return;
     }
 
     setCallStatus('loading');
     try {
-      await window.vapi.start(VAPI_AGENT_ID, VAPI_PUBLIC_KEY);
+      await window.vapi.start(currentAgentId, VAPI_PUBLIC_KEY);
     } catch (e) {
       console.error("Vapi Start Error:", e);
       setCallStatus('inactive');
@@ -87,8 +93,10 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
   return (
     <div className={`p-8 rounded-[2rem] shadow-2xl transition-all duration-700 border-2 ${isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-900 border-blue-700'} text-white`}>
       <div className="text-center mb-8">
-        <h3 className="text-sm font-black uppercase tracking-widest">{isEmergency ? 'Mike (Emergency)' : 'Sarah (Home Advisor)'}</h3>
-        <p className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Superior Voice Network</p>
+        <h3 className="text-sm font-black uppercase tracking-widest">
+          {isEmergency ? 'Mike (Emergency Dispatch)' : 'Sarah (Senior Advisor)'}
+        </h3>
+        <p className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Superior Voice Protocol</p>
       </div>
 
       <div className="flex flex-col items-center py-4">
@@ -119,7 +127,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </button>
 
         <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] opacity-70 text-center">
-          {callStatus === 'loading' ? 'Establishing Line...' : (isActive ? 'Channel Encrypted' : 'Tap to speak with Sarah')}
+          {callStatus === 'loading' ? 'Authenticating...' : (isActive ? 'Channel Encrypted' : `Talk to ${isEmergency ? 'Mike' : 'Sarah'}`)}
         </p>
       </div>
     </div>
