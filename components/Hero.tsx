@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Persona } from '../types.ts';
+import { Persona } from '../types';
 
 interface HeroProps {
   persona: Persona;
@@ -35,11 +35,11 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                   className={`px-12 py-6 rounded-2xl font-black shadow-2xl transition-all flex items-center gap-4 transform active:scale-95 group ${
                     isVoiceActive 
                       ? 'bg-white text-orange-600 border-4 border-orange-600' 
-                      : 'bg-orange-600 text-white hover:bg-orange-700 emergency-active'
+                      : 'bg-orange-600 text-white hover:bg-orange-700'
                   }`}
                 >
                    <span className="text-2xl group-hover:rotate-12 transition-transform">🚨</span> 
-                   {isVoiceActive ? 'LISTENING TO EMERGENCY' : 'TALK TO DISPATCH'}
+                   {isVoiceActive ? 'HANDING OVER TO MIKE' : 'TALK TO DISPATCH'}
                 </button>
               </div>
             </>
@@ -49,7 +49,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                 SMART <br/> <span className="text-blue-700">SOLUTIONS</span>
               </h2>
               <p className="text-slate-500 text-xl leading-relaxed font-medium max-w-md">
-                Speak with Melissa to schedule maintenance or verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
+                Speak with <strong>Sarah</strong> to schedule maintenance or verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <button 
@@ -61,7 +61,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                   }`}
                 >
                   <span className="text-2xl group-hover:scale-110 transition-transform">🎙️</span> 
-                  {isVoiceActive ? 'MELISSA IS LISTENING' : 'START VOICE INQUIRY'}
+                  {isVoiceActive ? 'SARAH IS LISTENING' : 'TALK TO SARAH'}
                 </button>
               </div>
             </>
@@ -81,7 +81,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
               ) : (
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&h=800&auto=format&fit=crop" 
-                  alt="Home Advisor Melissa" 
+                  alt="Home Advisor Sarah" 
                   className="relative z-10 w-[420px] h-[420px] object-cover rounded-[4rem] shadow-2xl border-[12px] border-white transition-all duration-500 group-hover:scale-[1.02]"
                 />
               )}

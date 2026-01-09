@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SERVICES } from '../constants.tsx';
+import { SERVICES } from '../constants';
 
 const ServiceCards: React.FC = () => {
   const scrollToBook = (e: React.MouseEvent) => {
@@ -10,7 +10,7 @@ const ServiceCards: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div id="services" className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {SERVICES.map((service, index) => (
         <div 
           key={index} 

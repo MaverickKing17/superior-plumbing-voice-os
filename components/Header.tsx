@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Persona } from '../types.ts';
 
@@ -26,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
 
   const togglePersona = () => {
     if (setPersona) {
-      setPersona(isEmergency ? Persona.MELISSA : Persona.MIKE);
+      setPersona(isEmergency ? Persona.SARAH : Persona.MIKE);
     }
   };
 
@@ -62,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
               </span>
-              Demo: Switch View
+              Mode: {isEmergency ? 'Switch to Standard' : 'Switch to Emergency'}
             </button>
 
             <div className="hidden xl:flex gap-6 font-semibold text-gray-600">
