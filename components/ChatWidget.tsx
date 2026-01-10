@@ -60,7 +60,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ activePersona }) => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+      // Initialize GoogleGenAI with process.env.API_KEY directly as per guidelines
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const model = 'gemini-3-flash-preview';
       
       // Prepare chat history for context
@@ -69,6 +70,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ activePersona }) => {
         parts: [{ text: m.text }]
       }));
 
+      // Call generateContent with both model name and prompt (conversation history)
       const response = await ai.models.generateContent({
         model,
         contents: [
@@ -81,6 +83,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ activePersona }) => {
         }
       });
 
+      // Directly access .text property from GenerateContentResponse
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'agent',
