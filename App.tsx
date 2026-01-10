@@ -97,30 +97,58 @@ const App: React.FC = () => {
           </section>
 
           {/* Rebates Section */}
-          <section id="rebates" className="bg-white p-16 md:p-24 rounded-[4rem] shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-20 items-center">
-            <div className="flex-1 space-y-10">
-               <h2 className="text-xs font-black text-green-600 uppercase tracking-[0.5em]">Government Funding Portfolio</h2>
-               <h3 className="text-5xl md:text-7xl font-black tracking-tighter text-slate-950 leading-[0.9]">Ontario HRS <br/> Rebate 2026</h3>
-               <p className="text-slate-600 text-xl leading-relaxed font-medium max-w-2xl">
-                 As authorized partners for the Home Renovation Savings program, we facilitate high-yield capital returns for infrastructure upgrades. Secure tax-free capital for precision thermal technology.
-               </p>
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                 <div className="p-10 bg-green-50 rounded-[2.5rem] border border-green-100">
-                    <p className="text-[11px] font-black text-green-700 uppercase tracking-[0.2em] mb-3">Maximum Payout</p>
-                    <p className="text-6xl font-black text-green-950 tracking-tighter">$7,500</p>
+          <section id="rebates" className="bg-white p-12 md:p-20 rounded-[4rem] shadow-sm border border-slate-100 flex flex-col xl:flex-row gap-16 items-center">
+            <div className="flex-1 space-y-8">
+               <div className="space-y-4">
+                  <h2 className="text-xs font-black text-green-600 uppercase tracking-[0.5em]">Government Funding Portfolio</h2>
+                  <h3 className="text-5xl md:text-7xl font-black tracking-tighter text-slate-950 leading-[0.9]">Ontario HRS <br/> Rebate 2026</h3>
+                  <p className="text-slate-600 text-xl leading-relaxed font-medium max-w-xl">
+                    As authorized partners for the Home Renovation Savings program, we facilitate high-yield capital returns for infrastructure upgrades. Secure tax-free capital for precision thermal technology.
+                  </p>
+               </div>
+               
+               <div className="flex flex-wrap gap-4">
+                 <div className="flex-1 min-w-[240px] p-8 rounded-[2.5rem] bg-[#F7FFF9] border border-green-100 flex flex-col justify-between shadow-sm">
+                    <div className="mb-4">
+                      <p className="text-[11px] font-black text-green-700 uppercase tracking-[0.2em]">Program Status</p>
+                      <span className="inline-block px-3 py-1 bg-green-500 text-white text-[9px] font-black rounded-full mt-2 uppercase tracking-widest">Active</span>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Max Payout</p>
+                      <p className="text-6xl font-black text-slate-900 tracking-tighter">$7,500</p>
+                    </div>
                  </div>
-                 <div className="p-10 bg-blue-50 rounded-[2.5rem] border border-blue-100">
-                    <p className="text-[11px] font-black text-blue-700 uppercase tracking-[0.2em] mb-3">Audit Rebate</p>
-                    <p className="text-6xl font-black text-blue-950 tracking-tighter">$600</p>
+                 
+                 <div className="flex-1 min-w-[240px] p-8 rounded-[2.5rem] bg-[#F5F9FF] border border-blue-100 flex flex-col justify-between shadow-sm">
+                    <div className="mb-4">
+                      <p className="text-[11px] font-black text-blue-700 uppercase tracking-[0.2em]">Verified Incentive</p>
+                      <span className="inline-block px-3 py-1 bg-blue-500 text-white text-[9px] font-black rounded-full mt-2 uppercase tracking-widest">Guaranteed</span>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-1">Audit Return</p>
+                      <p className="text-6xl font-black text-slate-900 tracking-tighter">$600</p>
+                    </div>
                  </div>
                </div>
-               <button className="px-12 py-6 bg-slate-950 text-white text-lg font-black rounded-2xl shadow-2xl hover:bg-slate-800 transition-all active:scale-95 uppercase tracking-widest">
-                 Verify Eligibility
-               </button>
+
+               <div className="pt-4">
+                 <button className="px-12 py-6 bg-slate-950 text-white text-lg font-black rounded-[1.5rem] shadow-2xl hover:bg-slate-800 transition-all active:scale-95 uppercase tracking-widest">
+                   Verify Eligibility Instantly
+                 </button>
+               </div>
             </div>
-            <div className="flex-shrink-0 w-full xl:w-[480px] h-[480px] bg-slate-100 rounded-[4rem] relative overflow-hidden shadow-2xl">
-               <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop" alt="Heat Pump Installation" className="w-full h-full object-cover" />
-               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent"></div>
+            
+            <div className="flex-shrink-0 w-full xl:w-[560px] aspect-square rounded-[4rem] relative overflow-hidden shadow-4xl group">
+               <img 
+                 src="https://i.ibb.co/Qvhhy8t8/hunyuan-image-3-0-b-Replace-the-current.png" 
+                 alt="Superior Infrastructure Visualization" 
+                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-60"></div>
+               <div className="absolute bottom-10 left-10 text-white">
+                  <p className="text-[11px] font-black uppercase tracking-[0.4em] mb-2 text-blue-300">Operational Excellence</p>
+                  <p className="text-2xl font-black tracking-tight leading-tight">Elite Infrastructure <br/> Verification</p>
+               </div>
             </div>
           </section>
 
