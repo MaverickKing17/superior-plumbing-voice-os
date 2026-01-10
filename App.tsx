@@ -5,6 +5,7 @@ import Hero from './components/Hero';
 import ServiceCards from './components/ServiceCards';
 import VapiAgent from './components/VapiAgent';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 
 const App: React.FC = () => {
   const [activePersona, setActivePersona] = useState<Persona>(Persona.SARAH);
@@ -207,18 +208,22 @@ const App: React.FC = () => {
 
       <Footer persona={activePersona} />
 
-      <div className="fixed bottom-6 right-6 z-[60] lg:hidden">
+      {/* Voice Toggle (Mobile Only) */}
+      <div className="fixed bottom-6 left-6 z-[60] lg:hidden">
         <button 
           onClick={() => setIsVoiceActive(!isVoiceActive)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-6xl transition-all active:scale-90 ${isVoiceActive ? 'bg-red-500' : 'bg-blue-700'}`}
+          className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-6xl transition-all active:scale-90 ${isVoiceActive ? 'bg-red-500' : (activePersona === Persona.SAM ? 'bg-orange-600' : 'bg-blue-700')}`}
         >
           {isVoiceActive ? (
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
           ) : (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
           )}
         </button>
       </div>
+
+      {/* New AI Chat Widget */}
+      <ChatWidget activePersona={activePersona} />
     </div>
   );
 };
