@@ -7,16 +7,9 @@ interface VapiAgentProps {
   onToggle: () => void;
 }
 
-declare global {
-  interface Window {
-    Vapi: any;
-  }
-}
-
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
   const vapiRef = useRef<any>(null);
-  const initialized = useRef(false);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
@@ -25,90 +18,71 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     [Persona.SAM]: "d8d63623-4803-4707-acd5-bfba01619825"
   };
 
-  const initVapi = () => {
-    if (window.Vapi && !vapiRef.current) {
-      console.log("[VapiAgent] Initializing Vapi SDK...");
-      try {
-        vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
-        
-        vapiRef.current.on('call-start', () => {
-          console.log("[VapiAgent] Call started successfully");
+  useEffect(() => {
+    // Initialize Vapi SDK from global window object (provided by script tag in index.html)
+    const initVapi = () => {
+      const VapiConstructor = (window as any).Vapi;
+      if (VapiConstructor && !vapiRef.current) {
+        console.log("[VapiAgent] Initializing Vapi from global window");
+        const vapi = new VapiConstructor(VAPI_PUBLIC_KEY);
+        vapiRef.current = vapi;
+
+        vapi.on('call-start', () => {
+          console.log("[VapiAgent] Call started");
           setCallStatus('active');
         });
 
-        vapiRef.current.on('call-end', () => {
+        vapi.on('call-end', () => {
           console.log("[VapiAgent] Call ended");
           setCallStatus('inactive');
-          onToggle();
+          if (isActive) onToggle();
         });
 
-        vapiRef.current.on('error', (e: any) => {
-          console.error("[VapiAgent] Vapi call error:", e);
+        vapi.on('error', (e: any) => {
+          console.error("[VapiAgent] SDK Error:", e);
           setCallStatus('inactive');
-          onToggle();
+          if (isActive) onToggle();
         });
-        
-        initialized.current = true;
-      } catch (err) {
-        console.error("[VapiAgent] Initialization failed:", err);
+        return true;
       }
-    }
-  };
+      return false;
+    };
 
-  useEffect(() => {
-    // Initial attempt
-    initVapi();
-    
-    // Polling for the script just in case it takes a moment to load
+    // Retry initialization if script isn't quite ready
     const interval = setInterval(() => {
-      if (!initialized.current) {
-        initVapi();
-      } else {
-        clearInterval(interval);
-      }
-    }, 500);
+      if (initVapi()) clearInterval(interval);
+    }, 200);
 
     return () => {
       clearInterval(interval);
-      if (vapiRef.current) {
-        console.log("[VapiAgent] Cleaning up Vapi session");
-        vapiRef.current.stop();
-      }
+      if (vapiRef.current) vapiRef.current.stop();
     };
-  }, []);
+  }, [isActive, onToggle]);
 
-  // React to isActive changes from parent component (e.g. Hero button clicks)
   useEffect(() => {
-    const handleVoiceToggle = async () => {
-      console.log(`[VapiAgent] isActive changed to: ${isActive}, current status: ${callStatus}`);
-      
+    const syncCall = async () => {
+      const vapi = vapiRef.current;
+      if (!vapi) return;
+
       if (isActive && callStatus === 'inactive') {
         const agentId = AGENT_IDS[persona];
-        
-        // Final attempt to init if not ready
-        if (!vapiRef.current) initVapi();
-
-        if (vapiRef.current) {
-          console.log(`[VapiAgent] Attempting to start call for agent: ${agentId}`);
-          setCallStatus('loading');
-          try {
-            await vapiRef.current.start(agentId);
-          } catch (err) {
-            console.error("[VapiAgent] Failed to start Vapi call:", err);
-            setCallStatus('inactive');
-            onToggle();
-          }
-        } else {
-          console.error("[VapiAgent] Vapi SDK not available on window.Vapi");
+        console.log(`[VapiAgent] Starting channel for ${persona}`);
+        setCallStatus('loading');
+        try {
+          await vapi.start(agentId);
+        } catch (err) {
+          console.error("[VapiAgent] Failed to start:", err);
+          setCallStatus('inactive');
           onToggle();
         }
       } else if (!isActive && (callStatus === 'active' || callStatus === 'loading')) {
-        console.log("[VapiAgent] Stopping call as isActive became false");
-        if (vapiRef.current) vapiRef.current.stop();
+        console.log("[VapiAgent] Closing channel");
+        vapi.stop();
+        setCallStatus('inactive');
       }
     };
 
-    handleVoiceToggle();
+    syncCall();
   }, [isActive, persona]);
 
   const isEmergency = persona === Persona.SAM;
@@ -119,10 +93,10 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
       
       <div className="text-center mb-10 relative z-10">
         <h3 className={`text-base font-black uppercase tracking-[0.3em] ${isEmergency ? 'text-white' : 'text-slate-900'}`}>
-          {isEmergency ? 'Sam: Elite Dispatch' : 'Sarah: Client Success'}
+          {isEmergency ? 'Sam: Emergency Dispatch' : 'Sarah: Rebate Specialist'}
         </h3>
         <p className={`text-[11px] font-black uppercase tracking-[0.1em] mt-2 opacity-50 ${isEmergency ? 'text-orange-100' : 'text-slate-400'}`}>
-          Secure Voice Channel v4.5
+          Superior Voice OS v5.2
         </p>
       </div>
 
@@ -155,7 +129,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </button>
 
         <p className={`mt-10 text-[12px] font-black uppercase tracking-[0.3em] ${isEmergency ? 'text-orange-50' : 'text-slate-900'}`}>
-          {callStatus === 'loading' ? 'Connecting...' : (isActive ? 'Channel Live' : `Connect to ${isEmergency ? 'Sam' : 'Sarah'}`)}
+          {callStatus === 'loading' ? 'Establishing Line...' : (isActive ? 'Channel Encrypted' : `Talk to ${isEmergency ? 'Sam' : 'Sarah'}`)}
         </p>
       </div>
     </div>

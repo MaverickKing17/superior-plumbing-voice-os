@@ -27,7 +27,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                   URGENT <br/> <span className="text-orange-600">RESPONSE</span>
                 </h2>
                 <p className="text-slate-500 text-2xl leading-relaxed font-medium max-w-lg">
-                  Sam is managing priority triage across the GTA. Licensed technicians are ready for <span className="text-slate-900 font-bold underline decoration-orange-500/30">4-hour emergency arrival</span>.
+                  Sam is managing priority triage across the GTA. Licensed TSSA technicians are ready for <span className="text-slate-900 font-bold underline decoration-orange-500/30">4-hour emergency arrival</span>.
                 </p>
                 <div className="flex flex-wrap gap-6 pt-6">
                   <button 
@@ -45,11 +45,11 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
               </>
             ) : (
               <>
-                <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.9] tracking-tighter">
-                  PRECISION <br/> <span className="text-blue-700">HVAC CARE</span>
+                <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase">
+                  ELITE HVAC <br/> <span className="text-blue-700">SYSTEMS</span>
                 </h2>
                 <p className="text-slate-500 text-2xl leading-relaxed font-medium max-w-lg">
-                  Speak with <strong>Sarah</strong> to claim your <strong>$7,500 Ontario HRS rebate</strong> and upgrade to precision-engineered comfort solutions.
+                  Precision-engineered home comfort for the GTA. Speak with <strong>Sarah</strong> to verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
                 </p>
                 <div className="flex flex-wrap gap-6 pt-6">
                   <button 
