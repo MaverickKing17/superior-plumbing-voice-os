@@ -45,9 +45,9 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
               </div>
               <div className="hidden sm:block">
                 <h1 className={`text-2xl font-black uppercase tracking-tighter leading-none ${isEmergency ? 'text-orange-950' : 'text-blue-900'}`}>
-                  Superior <span className="text-slate-400 font-bold">Plumbing</span>
+                  Superior <span className="text-slate-400 font-bold">Mechanical</span>
                 </h1>
-                <p className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-black mt-1 leading-none">ENTERPRISE OS</p>
+                <p className="text-[10px] uppercase tracking-[0.5em] text-slate-400 font-black mt-1 leading-none">Plumbing & Heating OS</p>
               </div>
             </div>
           </div>
@@ -61,16 +61,16 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-current"></span>
               </span>
-              Mode: {isEmergency ? 'Service' : 'Emergency'}
+              Mode: {isEmergency ? 'Service Mode' : 'Emergency Mode'}
             </button>
 
             <div className="hidden xl:flex gap-10 font-black text-slate-400 text-[13px] uppercase tracking-[0.2em]">
-              <a href="#services" onClick={scrollToSection('services')} className="hover:text-blue-700 transition-colors">Infrastructure</a>
-              <a href="#rebates" onClick={scrollToSection('rebates')} className="hover:text-blue-700 transition-colors">Capital Rebates</a>
+              <a href="#services" onClick={scrollToSection('services')} className="hover:text-blue-700 transition-colors">Service Catalog</a>
+              <a href="#rebates" onClick={scrollToSection('rebates')} className="hover:text-blue-700 transition-colors">Funding Programs</a>
             </div>
 
             <div className="flex flex-col items-end">
-              <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em] mb-1">Direct Line</p>
+              <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em] mb-1">Direct Support</p>
               <a href="tel:18669322818" className={`text-2xl font-black transition-colors tracking-tighter ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
                 (866) 932-2818
               </a>
@@ -80,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
               onClick={scrollToSection('book')}
               className={`hidden md:block px-10 py-4 rounded-2xl font-black text-[13px] uppercase tracking-widest text-white shadow-2xl transition-all transform hover:scale-105 active:scale-95 ${isEmergency ? 'bg-orange-600 hover:bg-orange-700 shadow-orange-100' : 'bg-blue-700 hover:bg-blue-800 shadow-blue-100'}`}
             >
-              DEPLOY TECH
+              DEPLOY ENGINEER
             </button>
           </div>
         </div>

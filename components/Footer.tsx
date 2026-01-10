@@ -43,24 +43,24 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
               </div>
               <div>
                 <h3 className={`text-2xl font-black uppercase tracking-tight leading-none ${isEmergency ? 'text-slate-950' : 'text-blue-950'}`}>
-                  Superior <span className="text-slate-400 font-bold">Plumbing</span>
+                  Superior <span className="text-slate-400 font-bold">Mechanical</span>
                 </h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 leading-none">Enterprise Solutions</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 leading-none">Plumbing & Heating OS</p>
               </div>
             </div>
             
             <p className="text-slate-500 text-[17px] leading-relaxed max-w-[320px] font-medium">
-              Providing elite HVAC and plumbing solutions across Ontario with a <span className="text-slate-900 font-extrabold underline decoration-blue-500/20 underline-offset-4">100% satisfaction guarantee</span>.
+              Providing enterprise mechanical and hydronic solutions across Ontario with a <span className="text-slate-900 font-extrabold underline decoration-blue-500/20 underline-offset-4">100% execution bond</span>.
             </p>
 
             <div className="space-y-8">
               <div className="inline-flex flex-col gap-1">
                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Compliance Verify</span>
-                <span className="text-[14px] font-bold text-slate-900">TSSA License: 000394817</span>
+                <span className="text-[14px] font-bold text-slate-900">TSSA Registry: 000394817</span>
               </div>
               
               <div className="flex gap-4">
-                {['FB', 'IG', 'IN'].map((social) => (
+                {['FB', 'IG', 'LI'].map((social) => (
                   <div key={social} className="w-12 h-12 rounded-[1rem] bg-[#F8FAFC] flex items-center justify-center text-[13px] font-black text-[#94A3B8] hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.02)] hover:shadow-md hover:-translate-y-1 active:scale-95">
                     {social}
                   </div>
@@ -71,11 +71,11 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
 
           <div className="lg:pt-6">
             <h4 className="text-[13px] font-black text-slate-950 uppercase tracking-[0.3em] mb-12 relative">
-              Our Services
+              Mechanical Catalog
               <span className={`absolute -bottom-3 left-0 w-10 h-1 rounded-full ${isEmergency ? 'bg-orange-500' : 'bg-blue-700'}`}></span>
             </h4>
             <ul className="space-y-6 text-[16px] font-semibold text-slate-500">
-              {['Emergency Repair', 'Heat Pump Specialist', 'Drain Cleaning', 'Sewer Inspections', 'Furnace Maintenance'].map((item) => (
+              {['Critical Repair', 'CCASHP Integration', 'Hydronic Triage', 'Diagnostic Imaging', 'Mechanical Maintenance'].map((item) => (
                 <li key={item} className="transition-transform hover:translate-x-3 duration-300">
                   <a href="#services" onClick={handleScroll('#services')} className="hover:text-slate-950 transition-colors flex items-center gap-4 group text-sm">
                     <span className={`w-2 h-2 rounded-full transition-all group-hover:scale-150 ${isEmergency ? 'bg-orange-300' : 'bg-blue-300'}`}></span>
@@ -88,16 +88,16 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
 
           <div className="lg:pt-6">
             <h4 className="text-[13px] font-black text-slate-950 uppercase tracking-[0.3em] mb-12 relative">
-              Resources
+              Client Resources
               <span className={`absolute -bottom-3 left-0 w-10 h-1 rounded-full ${isEmergency ? 'bg-orange-500' : 'bg-blue-700'}`}></span>
             </h4>
             <ul className="space-y-6 text-[16px] font-semibold text-slate-500">
               {[
-                { label: 'HRS Rebate Guide', id: '#rebates' },
-                { label: 'Service Coverage', id: '#top' },
-                { label: 'Instant Dispatch', id: '#book' },
-                { label: 'Financing Options', id: '#rebates' },
-                { label: 'Privacy Protocol', id: '#top' }
+                { label: 'Funding Audit Guide', id: '#rebates' },
+                { label: 'Operational Coverage', id: '#top' },
+                { label: 'SLA Protocols', id: '#book' },
+                { label: 'Capital Incentives', id: '#rebates' },
+                { label: 'Compliance Protocol', id: '#top' }
               ].map((item) => (
                 <li key={item.label} className="transition-transform hover:translate-x-3 duration-300">
                   <a href={item.id} onClick={handleScroll(item.id)} className="hover:text-slate-950 transition-colors flex items-center gap-4 group text-sm">
@@ -111,7 +111,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
 
           <div className="space-y-12">
             <h4 className="text-[13px] font-black text-slate-950 uppercase tracking-[0.3em] lg:pt-6 relative">
-              Direct Support
+              Direct Engineering
               <span className={`absolute -bottom-3 left-0 w-10 h-1 rounded-full ${isEmergency ? 'bg-orange-500' : 'bg-blue-700'}`}></span>
             </h4>
             
@@ -126,7 +126,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                 <div className="flex items-center gap-3 mb-6">
                   <span className={`w-3 h-3 rounded-full animate-pulse ${isEmergency ? 'bg-orange-400 shadow-[0_0_10px_#fb923c]' : 'bg-blue-400 shadow-[0_0_10px_#60a5fa]'}`}></span>
                   <span className={`text-[12px] font-black uppercase tracking-[0.4em] ${isEmergency ? 'text-orange-300' : 'text-blue-300'}`}>
-                    PRIORITY HOTLINE
+                    PRIORITY DISPATCH
                   </span>
                 </div>
                 
@@ -137,7 +137,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
                 <div className="mt-8 flex items-center justify-between">
                   <div className="px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl">
                     <p className="text-[12px] text-white font-black uppercase tracking-widest whitespace-nowrap">
-                      RESPONSE: <span className={isEmergency ? 'text-orange-400' : 'text-blue-400'}>18 MINS</span>
+                      GTA SLA: <span className={isEmergency ? 'text-orange-400' : 'text-blue-400'}>4 HOURS</span>
                     </p>
                   </div>
                 </div>
