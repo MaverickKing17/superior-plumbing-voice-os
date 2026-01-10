@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Persona } from '../types';
 
 interface VapiAgentProps {
@@ -7,14 +7,16 @@ interface VapiAgentProps {
   onToggle: () => void;
 }
 
+// Typing for the global Vapi constructor provided by the CDN script
 declare global {
   interface Window {
-    vapi: any;
+    Vapi: any;
   }
 }
 
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
+  const vapiRef = useRef<any>(null);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
@@ -24,24 +26,35 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
   };
 
   useEffect(() => {
-    const handleCallStart = () => setCallStatus('active');
-    const handleCallEnd = () => {
-      setCallStatus('inactive');
-      if (isActive) onToggle();
-    };
+    // Initialize Vapi instance once
+    if (!vapiRef.current && window.Vapi) {
+      vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
+      
+      vapiRef.current.on('call-start', () => {
+        console.log('Call has started');
+        setCallStatus('active');
+      });
 
-    if (window.vapi) {
-      window.vapi.on('call-start', handleCallStart);
-      window.vapi.on('call-end', handleCallEnd);
+      vapiRef.current.on('call-end', () => {
+        console.log('Call has ended');
+        setCallStatus('inactive');
+        // Ensure the external state stays in sync
+        if (isActive) onToggle();
+      });
+
+      vapiRef.current.on('error', (e: any) => {
+        console.error('Vapi Error:', e);
+        setCallStatus('inactive');
+        if (isActive) onToggle();
+      });
     }
 
     return () => {
-      if (window.vapi) {
-        window.vapi.off('call-start', handleCallStart);
-        window.vapi.off('call-end', handleCallEnd);
+      if (vapiRef.current) {
+        vapiRef.current.stop();
       }
     };
-  }, [isActive, onToggle]);
+  }, []);
 
   useEffect(() => {
     if (isActive && callStatus === 'inactive') {
@@ -49,36 +62,35 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     } else if (!isActive && callStatus === 'active') {
       stopVapiCall();
     }
-  }, [isActive, persona]);
+  }, [isActive]);
 
   const startVapiCall = async () => {
-    if (!window.vapi) {
-      console.warn("Vapi SDK not yet initialized.");
-      onToggle();
-      return;
+    if (!vapiRef.current) {
+      // Retry initialization if it failed initially
+      if (window.Vapi) {
+        vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
+      } else {
+        console.error("Vapi SDK not found on window");
+        onToggle();
+        return;
+      }
     }
-    
+
     const currentAgentId = AGENT_IDS[persona];
-
-    if (!currentAgentId) {
-      console.error(`Agent ID for ${persona} not configured.`);
-      onToggle();
-      return;
-    }
-
     setCallStatus('loading');
+    
     try {
-      await window.vapi.start(currentAgentId, VAPI_PUBLIC_KEY);
+      await vapiRef.current.start(currentAgentId);
     } catch (e) {
-      console.error("Vapi Start Error:", e);
+      console.error("Failed to start Vapi call:", e);
       setCallStatus('inactive');
       onToggle();
     }
   };
 
   const stopVapiCall = () => {
-    if (window.vapi) {
-      window.vapi.stop();
+    if (vapiRef.current) {
+      vapiRef.current.stop();
     }
   };
 
@@ -93,7 +105,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
           {isEmergency ? 'Sam: Elite Dispatch' : 'Sarah: Client Success'}
         </h3>
         <p className={`text-[11px] font-black uppercase tracking-[0.1em] mt-2 opacity-50 ${isEmergency ? 'text-orange-100' : 'text-slate-400'}`}>
-          Encrypted AI Interface v4.2
+          Secure Voice Channel v4.5
         </p>
       </div>
 
@@ -113,7 +125,8 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
 
         <button 
           onClick={onToggle} 
-          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white animate-pulse' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')}`}
+          disabled={callStatus === 'loading'}
+          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {callStatus === 'loading' ? (
             <div className="w-12 h-12 border-[5px] border-current border-t-transparent rounded-full animate-spin"></div>
@@ -125,7 +138,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </button>
 
         <p className={`mt-10 text-[12px] font-black uppercase tracking-[0.3em] ${isEmergency ? 'text-orange-50' : 'text-slate-900'}`}>
-          {callStatus === 'loading' ? 'Establishing Line...' : (isActive ? 'Channel Encrypted' : `Connect to ${isEmergency ? 'Sam' : 'Sarah'}`)}
+          {callStatus === 'loading' ? 'Connecting...' : (isActive ? 'Channel Live' : `Connect to ${isEmergency ? 'Sam' : 'Sarah'}`)}
         </p>
       </div>
     </div>
