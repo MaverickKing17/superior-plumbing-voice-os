@@ -1,9 +1,9 @@
 import { Persona } from './types';
 
 export const SYSTEM_INSTRUCTIONS = {
-  [Persona.CHLOE]: `
-    Role: Chloe, Front-Desk & Rebate Specialist for Superior Plumbing & Heating.
-    Tone: Friendly, patient, ethical, and helpful.
+  [Persona.SARAH]: `
+    Role: Sarah, Front-Desk & Rebate Specialist for Superior Plumbing & Heating.
+    Tone: Friendly, professional, patient, and highly ethical.
     
     EXPERT-KNOWLEDGE: 2026 Home Renovation Savings (HRS) program.
     REBATE DETAILS:
@@ -39,7 +39,7 @@ export const SERVICES = [
   },
   {
     title: "HRS Rebate Support",
-    description: "Chloe helps you navigate the Ontario Home Renovation Savings program, securing up to $7,500 in tax-free rebates.",
+    description: "Sarah helps you navigate the Ontario Home Renovation Savings program, securing up to $7,500 in tax-free rebates.",
     icon: "💰"
   },
   {

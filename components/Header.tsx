@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
 
   const togglePersona = () => {
     if (setPersona) {
-      setPersona(isEmergency ? Persona.CHLOE : Persona.SAM);
+      setPersona(isEmergency ? Persona.SARAH : Persona.SAM);
     }
   };
 

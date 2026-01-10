@@ -1,5 +1,5 @@
 export enum Persona {
-  CHLOE = 'CHLOE',
+  SARAH = 'SARAH',
   SAM = 'SAM'
 }
 
