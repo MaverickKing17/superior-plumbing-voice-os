@@ -9,9 +9,25 @@ import Footer from './components/Footer';
 const App: React.FC = () => {
   const [activePersona, setActivePersona] = useState<Persona>(Persona.SARAH);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handlePersonaChange = (newPersona: Persona) => {
+    if (newPersona === activePersona) return;
+    
+    setIsTransitioning(true);
+    // Short delay to allow the animation to cover the screen before state swap
+    setTimeout(() => {
+      setActivePersona(newPersona);
+    }, 350);
+
+    // End transition state after animation finishes
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 700);
+  };
 
   const triggerSarahEligibility = () => {
-    setActivePersona(Persona.SARAH);
+    handlePersonaChange(Persona.SARAH);
     setIsVoiceActive(true);
     const agentSection = document.getElementById('ai-agent-interface');
     if (agentSection) {
@@ -21,7 +37,20 @@ const App: React.FC = () => {
   
   return (
     <div className={`min-h-screen transition-all duration-1000 ${activePersona === Persona.SAM ? 'bg-orange-50/30' : 'bg-white'}`}>
-      <Header persona={activePersona} setPersona={(p) => setActivePersona(p as Persona)} />
+      {/* Persona Reconfiguration Overlay */}
+      {isTransitioning && (
+        <div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden">
+          <div className={`absolute inset-0 animate-persona-wipe flex items-center justify-center ${activePersona === Persona.SAM ? 'bg-blue-700' : 'bg-orange-600'}`}>
+            <div className="scanline absolute inset-0 opacity-30"></div>
+            <div className="relative z-10 text-center">
+              <p className="text-white text-[10px] font-black uppercase tracking-[0.8em] animate-pulse">Reconfiguring Voice Core</p>
+              <p className="text-white/40 text-[8px] font-bold uppercase tracking-[0.4em] mt-2">Superior OS v5.2 - GTA Field Protocol</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Header persona={activePersona} setPersona={handlePersonaChange} />
       
       <main>
         {/* Hero Section */}
@@ -106,7 +135,7 @@ const App: React.FC = () => {
             </div>
           </section>
 
-          {/* Rebates Section - UPDATED WITH USER PROVIDED ASSET */}
+          {/* Rebates Section */}
           <section id="rebates" className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col xl:flex-row">
             {/* Left Content Column */}
             <div className="flex-1 p-8 lg:p-14 space-y-8 flex flex-col justify-center">
@@ -153,7 +182,7 @@ const App: React.FC = () => {
                </div>
             </div>
             
-            {/* Right Image Column - UPDATED: SHOWS TECHNICIAN & VAN (USER PROVIDED URL) */}
+            {/* Right Image Column */}
             <div className="w-full xl:w-1/2 relative min-h-[450px] xl:min-h-[550px]">
                <img 
                  src="https://i.ibb.co/Qvhhy8t8/hunyuan-image-3-0-b-Replace-the-current.png" 
