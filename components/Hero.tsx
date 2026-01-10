@@ -32,14 +32,17 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                 <div className="flex flex-wrap gap-6 pt-6">
                   <button 
                     onClick={onVoiceToggle}
-                    className={`px-14 py-7 rounded-[2rem] font-black shadow-3xl transition-all flex items-center gap-5 transform active:scale-95 group ${
+                    className={`px-14 py-7 rounded-[2rem] font-black shadow-3xl transition-all flex items-center gap-5 transform active:scale-95 group relative ${
                       isVoiceActive 
-                        ? 'bg-white text-orange-600 border-4 border-orange-600' 
+                        ? 'bg-white text-orange-600 border-4 animate-active-glow-orange' 
                         : 'bg-orange-600 text-white hover:bg-orange-700'
                     }`}
                   >
                      <span className="text-3xl group-hover:rotate-12 transition-transform">🎧</span> 
                      <span className="text-xl uppercase tracking-widest">{isVoiceActive ? 'SAM IS ACTIVE' : 'TALK TO SAM'}</span>
+                     {isVoiceActive && (
+                        <span className="absolute -top-3 -right-3 bg-orange-600 text-white text-[10px] px-3 py-1 rounded-full font-black animate-pulse shadow-lg">LIVE</span>
+                     )}
                   </button>
                 </div>
               </>
@@ -54,14 +57,17 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                 <div className="flex flex-wrap gap-6 pt-6">
                   <button 
                     onClick={onVoiceToggle}
-                    className={`px-14 py-7 rounded-[2rem] font-black shadow-3xl transition-all flex items-center gap-5 transform active:scale-95 group ${
+                    className={`px-14 py-7 rounded-[2rem] font-black shadow-3xl transition-all flex items-center gap-5 transform active:scale-95 group relative ${
                       isVoiceActive 
-                        ? 'bg-white text-blue-700 border-4 border-blue-700' 
+                        ? 'bg-white text-blue-700 border-4 animate-active-glow-blue' 
                         : 'bg-blue-700 text-white hover:bg-blue-800'
                     }`}
                   >
                     <span className="text-3xl group-hover:scale-110 transition-transform">🎙️</span> 
                     <span className="text-xl uppercase tracking-widest">{isVoiceActive ? 'SARAH IS ACTIVE' : 'TALK TO SARAH'}</span>
+                    {isVoiceActive && (
+                        <span className="absolute -top-3 -right-3 bg-blue-700 text-white text-[10px] px-3 py-1 rounded-full font-black animate-pulse shadow-lg">LIVE</span>
+                     )}
                   </button>
                 </div>
               </>

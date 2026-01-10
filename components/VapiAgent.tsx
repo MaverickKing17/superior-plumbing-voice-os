@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import Vapi from '@vapi-ai/web';
 import { Persona } from '../types';
 
 interface VapiAgentProps {
@@ -9,109 +10,72 @@ interface VapiAgentProps {
 
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
-  const [isSdkReady, setIsSdkReady] = useState(false);
-  const vapiRef = useRef<any>(null);
+  const vapiRef = useRef<Vapi | null>(null);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
   const AGENT_IDS = {
     [Persona.SARAH]: "d8d63623-4803-4707-acd5-bfba01619825",
-    [Persona.SAM]: "d8d63623-4803-4707-acd5-bfba01619825" // Using Sarah's ID as provided, Sam can be updated if a specific ID is available
-  };
-
-  // Robust accessor for the Vapi SDK
-  const initializeVapi = () => {
-    if (vapiRef.current) return vapiRef.current;
-    
-    const VapiConstructor = (window as any).Vapi;
-    if (VapiConstructor) {
-      console.log("[VapiAgent] Vapi SDK found. Initializing...");
-      try {
-        const vapi = new VapiConstructor(VAPI_PUBLIC_KEY);
-        
-        vapi.on('call-start', () => {
-          console.log("[VapiAgent] Call started successfully");
-          setCallStatus('active');
-        });
-
-        vapi.on('call-end', () => {
-          console.log("[VapiAgent] Call ended");
-          setCallStatus('inactive');
-          // Reset UI state if the call was stopped by the agent or server
-          onToggle();
-        });
-
-        vapi.on('error', (e: any) => {
-          console.error("[VapiAgent] SDK Error:", e);
-          setCallStatus('inactive');
-          onToggle();
-        });
-
-        vapiRef.current = vapi;
-        setIsSdkReady(true);
-        return vapi;
-      } catch (err) {
-        console.error("[VapiAgent] Failed to instantiate Vapi:", err);
-        return null;
-      }
-    }
-    return null;
+    [Persona.SAM]: "d8d63623-4803-4707-acd5-bfba01619825"
   };
 
   useEffect(() => {
-    // Poll for the SDK until it's loaded in the window
-    const pollInterval = setInterval(() => {
-      const vapi = initializeVapi();
-      if (vapi) {
-        console.log("[VapiAgent] SDK initialization successful via polling.");
-        clearInterval(pollInterval);
-      }
-    }, 500);
+    // Initialize Vapi SDK directly using imported module
+    if (!vapiRef.current) {
+      console.log("[VapiAgent] Initializing Vapi SDK from module...");
+      const vapi = new Vapi(VAPI_PUBLIC_KEY);
+      vapiRef.current = vapi;
+
+      vapi.on('call-start', () => {
+        console.log("[VapiAgent] Call session established");
+        setCallStatus('active');
+      });
+
+      vapi.on('call-end', () => {
+        console.log("[VapiAgent] Call session ended");
+        setCallStatus('inactive');
+        onToggle();
+      });
+
+      vapi.on('error', (e) => {
+        console.error("[VapiAgent] Vapi SDK encountered an error:", e);
+        setCallStatus('inactive');
+        onToggle();
+      });
+    }
 
     return () => {
-      clearInterval(pollInterval);
       if (vapiRef.current) {
         vapiRef.current.stop();
       }
     };
   }, []);
 
-  // React to isActive changes (from Hero buttons or this component's button)
   useEffect(() => {
     const handleCallSync = async () => {
-      // If the SDK isn't ready yet, we can't do anything
-      if (!isSdkReady && !initializeVapi()) {
-        if (isActive) {
-          console.warn("[VapiAgent] Interaction requested but SDK not yet available.");
-          // We don't reset onToggle here to allow for the possibility of it loading mid-click, 
-          // but we provide feedback via logs.
-        }
-        return;
-      }
-
       const vapi = vapiRef.current;
       if (!vapi) return;
 
       if (isActive && callStatus === 'inactive') {
         const agentId = AGENT_IDS[persona];
-        console.log(`[VapiAgent] Starting session for ${persona} (ID: ${agentId})`);
+        console.log(`[VapiAgent] Requesting start for: ${persona}`);
         setCallStatus('loading');
         try {
           await vapi.start(agentId);
         } catch (err) {
-          console.error("[VapiAgent] Start sequence failed:", err);
+          console.error("[VapiAgent] Could not start session:", err);
           setCallStatus('inactive');
           onToggle();
         }
-      } else if (!isActive && (callStatus === 'active' || callStatus === 'loading')) {
-        console.log("[VapiAgent] Stopping session...");
+      } else if (!isActive && (callStatus !== 'inactive')) {
+        console.log("[VapiAgent] Requesting stop");
         vapi.stop();
         setCallStatus('inactive');
       }
     };
 
     handleCallSync();
-  }, [isActive, persona, isSdkReady]);
+  }, [isActive, persona]);
 
   const isEmergency = persona === Persona.SAM;
 
@@ -143,16 +107,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </div>
 
         <button 
-          onClick={() => {
-            if (!isSdkReady) {
-              console.log("[VapiAgent] SDK not ready, attempting forced initialization...");
-              if (!initializeVapi()) {
-                alert("Voice system is still initializing. Please wait a moment.");
-                return;
-              }
-            }
-            onToggle();
-          }} 
+          onClick={onToggle} 
           disabled={callStatus === 'loading'}
           className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white animate-pulse' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
@@ -166,7 +121,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </button>
 
         <p className={`mt-10 text-[12px] font-black uppercase tracking-[0.3em] ${isEmergency ? 'text-orange-50' : 'text-slate-900'}`}>
-          {!isSdkReady ? 'System Loading...' : (callStatus === 'loading' ? 'Connecting...' : (isActive ? 'Channel Live' : `Talk to ${isEmergency ? 'Sam' : 'Sarah'}`))}
+          {callStatus === 'loading' ? 'Connecting...' : (isActive ? 'Channel Encrypted' : `Talk to ${isEmergency ? 'Sam' : 'Sarah'}`)}
         </p>
       </div>
     </div>
