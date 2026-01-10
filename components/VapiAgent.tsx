@@ -10,7 +10,7 @@ interface VapiAgentProps {
 
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
-  const vapiRef = useRef<any>(null);
+  const vapiRef = useRef<Vapi | null>(null);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
@@ -20,18 +20,12 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
   };
 
   useEffect(() => {
-    // Initialize Vapi SDK directly using imported module
+    // Initialize Vapi SDK
     if (!vapiRef.current) {
       try {
-        console.log("[VapiAgent] Initializing Vapi SDK from module...");
-        const VapiConstructor = (Vapi as any).default || Vapi;
-        
-        if (typeof VapiConstructor !== 'function') {
-          console.error("[VapiAgent] Vapi is not a constructor. Check import compatibility.", VapiConstructor);
-          return;
-        }
-
-        const vapi = new VapiConstructor(VAPI_PUBLIC_KEY);
+        console.log("[VapiAgent] Initializing Vapi SDK...");
+        // Version 2.x standard constructor
+        const vapi = new Vapi(VAPI_PUBLIC_KEY);
         vapiRef.current = vapi;
 
         vapi.on('call-start', () => {
@@ -145,4 +139,5 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     </div>
   );
 };
+
 export default VapiAgent;

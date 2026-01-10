@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
-    "@vapi-ai/web": "0.0.35",
+    "@vapi-ai/web": "^2.1.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
