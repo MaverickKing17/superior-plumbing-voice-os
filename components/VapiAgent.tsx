@@ -24,7 +24,6 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     if (!vapiRef.current) {
       try {
         console.log("[VapiAgent] Initializing Vapi SDK from module...");
-        // Handle cases where the import might be the module object
         const VapiConstructor = (Vapi as any).default || Vapi;
         
         if (typeof VapiConstructor !== 'function') {
@@ -121,10 +120,17 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         <button 
           onClick={onToggle} 
           disabled={callStatus === 'loading'}
-          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white animate-pulse' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`relative w-28 h-28 rounded-full flex flex-col items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white animate-vapi-pulse' : (isEmergency ? 'bg-white text-orange-600 shadow-orange-200' : 'bg-blue-700 text-white shadow-blue-200')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {callStatus === 'loading' ? (
             <div className="w-12 h-12 border-[5px] border-current border-t-transparent rounded-full animate-spin"></div>
+          ) : isActive ? (
+            <div className="flex flex-col items-center gap-1">
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span className="text-[10px] font-black uppercase tracking-widest">End Call</span>
+            </div>
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -138,4 +144,5 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
       </div>
     </div>
   );
-};export default VapiAgent;
+};
+export default VapiAgent;
