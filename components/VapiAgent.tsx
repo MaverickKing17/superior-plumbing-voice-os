@@ -7,7 +7,6 @@ interface VapiAgentProps {
   onToggle: () => void;
 }
 
-// Typing for the global Vapi constructor provided by the CDN script
 declare global {
   interface Window {
     Vapi: any;
@@ -17,6 +16,7 @@ declare global {
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
   const vapiRef = useRef<any>(null);
+  const initialized = useRef(false);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
@@ -25,74 +25,91 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     [Persona.SAM]: "d8d63623-4803-4707-acd5-bfba01619825"
   };
 
-  useEffect(() => {
-    // Initialize Vapi instance once
-    if (!vapiRef.current && window.Vapi) {
-      vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
-      
-      vapiRef.current.on('call-start', () => {
-        console.log('Call has started');
-        setCallStatus('active');
-      });
+  const initVapi = () => {
+    if (window.Vapi && !vapiRef.current) {
+      console.log("[VapiAgent] Initializing Vapi SDK...");
+      try {
+        vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
+        
+        vapiRef.current.on('call-start', () => {
+          console.log("[VapiAgent] Call started successfully");
+          setCallStatus('active');
+        });
 
-      vapiRef.current.on('call-end', () => {
-        console.log('Call has ended');
-        setCallStatus('inactive');
-        // Ensure the external state stays in sync
-        if (isActive) onToggle();
-      });
+        vapiRef.current.on('call-end', () => {
+          console.log("[VapiAgent] Call ended");
+          setCallStatus('inactive');
+          onToggle();
+        });
 
-      vapiRef.current.on('error', (e: any) => {
-        console.error('Vapi Error:', e);
-        setCallStatus('inactive');
-        if (isActive) onToggle();
-      });
+        vapiRef.current.on('error', (e: any) => {
+          console.error("[VapiAgent] Vapi call error:", e);
+          setCallStatus('inactive');
+          onToggle();
+        });
+        
+        initialized.current = true;
+      } catch (err) {
+        console.error("[VapiAgent] Initialization failed:", err);
+      }
     }
+  };
+
+  useEffect(() => {
+    // Initial attempt
+    initVapi();
+    
+    // Polling for the script just in case it takes a moment to load
+    const interval = setInterval(() => {
+      if (!initialized.current) {
+        initVapi();
+      } else {
+        clearInterval(interval);
+      }
+    }, 500);
 
     return () => {
+      clearInterval(interval);
       if (vapiRef.current) {
+        console.log("[VapiAgent] Cleaning up Vapi session");
         vapiRef.current.stop();
       }
     };
   }, []);
 
+  // React to isActive changes from parent component (e.g. Hero button clicks)
   useEffect(() => {
-    if (isActive && callStatus === 'inactive') {
-      startVapiCall();
-    } else if (!isActive && callStatus === 'active') {
-      stopVapiCall();
-    }
-  }, [isActive]);
+    const handleVoiceToggle = async () => {
+      console.log(`[VapiAgent] isActive changed to: ${isActive}, current status: ${callStatus}`);
+      
+      if (isActive && callStatus === 'inactive') {
+        const agentId = AGENT_IDS[persona];
+        
+        // Final attempt to init if not ready
+        if (!vapiRef.current) initVapi();
 
-  const startVapiCall = async () => {
-    if (!vapiRef.current) {
-      // Retry initialization if it failed initially
-      if (window.Vapi) {
-        vapiRef.current = new window.Vapi(VAPI_PUBLIC_KEY);
-      } else {
-        console.error("Vapi SDK not found on window");
-        onToggle();
-        return;
+        if (vapiRef.current) {
+          console.log(`[VapiAgent] Attempting to start call for agent: ${agentId}`);
+          setCallStatus('loading');
+          try {
+            await vapiRef.current.start(agentId);
+          } catch (err) {
+            console.error("[VapiAgent] Failed to start Vapi call:", err);
+            setCallStatus('inactive');
+            onToggle();
+          }
+        } else {
+          console.error("[VapiAgent] Vapi SDK not available on window.Vapi");
+          onToggle();
+        }
+      } else if (!isActive && (callStatus === 'active' || callStatus === 'loading')) {
+        console.log("[VapiAgent] Stopping call as isActive became false");
+        if (vapiRef.current) vapiRef.current.stop();
       }
-    }
+    };
 
-    const currentAgentId = AGENT_IDS[persona];
-    setCallStatus('loading');
-    
-    try {
-      await vapiRef.current.start(currentAgentId);
-    } catch (e) {
-      console.error("Failed to start Vapi call:", e);
-      setCallStatus('inactive');
-      onToggle();
-    }
-  };
-
-  const stopVapiCall = () => {
-    if (vapiRef.current) {
-      vapiRef.current.stop();
-    }
-  };
+    handleVoiceToggle();
+  }, [isActive, persona]);
 
   const isEmergency = persona === Persona.SAM;
 
@@ -126,7 +143,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         <button 
           onClick={onToggle} 
           disabled={callStatus === 'loading'}
-          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`relative w-28 h-28 rounded-full flex items-center justify-center transition-all duration-500 shadow-5xl transform hover:scale-105 active:scale-95 ${isActive ? 'bg-red-500 text-white animate-pulse' : (isEmergency ? 'bg-white text-orange-600' : 'bg-blue-700 text-white')} ${callStatus === 'loading' ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {callStatus === 'loading' ? (
             <div className="w-12 h-12 border-[5px] border-current border-t-transparent rounded-full animate-spin"></div>
