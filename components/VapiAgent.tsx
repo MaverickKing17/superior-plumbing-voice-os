@@ -10,7 +10,7 @@ interface VapiAgentProps {
 
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
-  const vapiRef = useRef<Vapi | null>(null);
+  const vapiRef = useRef<any>(null);
 
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
@@ -22,26 +22,38 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
   useEffect(() => {
     // Initialize Vapi SDK directly using imported module
     if (!vapiRef.current) {
-      console.log("[VapiAgent] Initializing Vapi SDK from module...");
-      const vapi = new Vapi(VAPI_PUBLIC_KEY);
-      vapiRef.current = vapi;
+      try {
+        console.log("[VapiAgent] Initializing Vapi SDK from module...");
+        // Handle cases where the import might be the module object
+        const VapiConstructor = (Vapi as any).default || Vapi;
+        
+        if (typeof VapiConstructor !== 'function') {
+          console.error("[VapiAgent] Vapi is not a constructor. Check import compatibility.", VapiConstructor);
+          return;
+        }
 
-      vapi.on('call-start', () => {
-        console.log("[VapiAgent] Call session established");
-        setCallStatus('active');
-      });
+        const vapi = new VapiConstructor(VAPI_PUBLIC_KEY);
+        vapiRef.current = vapi;
 
-      vapi.on('call-end', () => {
-        console.log("[VapiAgent] Call session ended");
-        setCallStatus('inactive');
-        onToggle();
-      });
+        vapi.on('call-start', () => {
+          console.log("[VapiAgent] Call session established");
+          setCallStatus('active');
+        });
 
-      vapi.on('error', (e) => {
-        console.error("[VapiAgent] Vapi SDK encountered an error:", e);
-        setCallStatus('inactive');
-        onToggle();
-      });
+        vapi.on('call-end', () => {
+          console.log("[VapiAgent] Call session ended");
+          setCallStatus('inactive');
+          onToggle();
+        });
+
+        vapi.on('error', (e: any) => {
+          console.error("[VapiAgent] Vapi SDK encountered an error:", e);
+          setCallStatus('inactive');
+          onToggle();
+        });
+      } catch (err) {
+        console.error("[VapiAgent] Error during Vapi initialization:", err);
+      }
     }
 
     return () => {
@@ -126,6 +138,4 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
       </div>
     </div>
   );
-};
-
-export default VapiAgent;
+};export default VapiAgent;
