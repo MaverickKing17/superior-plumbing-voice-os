@@ -1,13 +1,12 @@
-
 import React from 'react';
-import { Persona } from '../types.ts';
+import { Persona } from '../types';
 
 interface FooterProps {
   persona: Persona;
 }
 
 const Footer: React.FC<FooterProps> = ({ persona }) => {
-  const isEmergency = persona === Persona.MIKE;
+  const isEmergency = persona === Persona.SAM;
 
   const handleScroll = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,7 +50,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             </div>
             
             <p className="text-slate-500 text-[17px] leading-relaxed max-w-[320px] font-medium">
-              Providing elite HVAC and plumbing solutions across the GTA with a <span className="text-slate-900 font-extrabold underline decoration-blue-500/20 underline-offset-4">100% satisfaction guarantee</span>.
+              Providing elite HVAC and plumbing solutions across Ontario with a <span className="text-slate-900 font-extrabold underline decoration-blue-500/20 underline-offset-4">100% satisfaction guarantee</span>.
             </p>
 
             <div className="space-y-8">
@@ -95,7 +94,7 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
             <ul className="space-y-6 text-[16px] font-semibold text-slate-500">
               {[
                 { label: 'HRS Rebate Guide', id: '#rebates' },
-                { label: 'Service Coverage', id: '#areas' },
+                { label: 'Service Coverage', id: '#top' },
                 { label: 'Instant Dispatch', id: '#book' },
                 { label: 'Financing Options', id: '#rebates' },
                 { label: 'Privacy Protocol', id: '#top' }
@@ -158,49 +157,23 @@ const Footer: React.FC<FooterProps> = ({ persona }) => {
         </div>
       </div>
 
-      {/* RE-ORGANIZED BOTTOM BAR */}
       <div className="bg-slate-950 text-white border-t border-slate-900">
         <div className={`h-1.5 w-full ${isEmergency ? 'bg-orange-600' : 'bg-blue-700'}`}></div>
         
         <div className="max-w-7xl mx-auto px-8 lg:px-12 py-8">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
-            
-            {/* Copyright block */}
             <div className="flex items-center gap-4">
               <div className={`w-2.5 h-2.5 rounded-full ${isEmergency ? 'bg-orange-500 animate-pulse' : 'bg-blue-500'}`}></div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <p className="text-[13px] font-black uppercase tracking-[0.05em] text-white whitespace-nowrap">
                   © 2025 SUPERIOR PLUMBING & HEATING LTD.
                 </p>
-                <div className="w-px h-4 bg-slate-800 hidden sm:block"></div>
-                <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
-                  enterprise asset
-                </span>
               </div>
             </div>
-
-            {/* Navigation links */}
             <div className="flex items-center gap-10 text-[11px] font-black uppercase tracking-[0.2em]">
-              <a href="#legal" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all">LEGAL</a>
-              <a href="#careers" onClick={handleScroll('#book')} className="text-slate-400 hover:text-white transition-all">CAREERS</a>
-              <a href="#sitemap" onClick={handleScroll('#top')} className="text-slate-400 hover:text-white transition-all">SITEMAP</a>
+              <a href="#legal" className="text-slate-400 hover:text-white transition-all">LEGAL</a>
+              <a href="#careers" className="text-slate-400 hover:text-white transition-all">CAREERS</a>
             </div>
-
-            {/* Tech Status section */}
-            <div className="flex items-center gap-6">
-              <div className="w-px h-8 bg-slate-800 hidden lg:block"></div>
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mb-1">SYSTEM STATUS</span>
-                <div className={`px-4 py-1.5 rounded-lg border font-mono text-[11px] font-black tracking-tight whitespace-nowrap ${
-                  isEmergency 
-                    ? 'border-orange-900/40 bg-orange-950/30 text-orange-400' 
-                    : 'border-blue-900/40 bg-blue-950/30 text-blue-400'
-                }`}>
-                  #SPH-7492-LIVE
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>

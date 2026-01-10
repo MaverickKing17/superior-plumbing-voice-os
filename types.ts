@@ -1,6 +1,6 @@
 export enum Persona {
-  SARAH = 'SARAH',
-  MIKE = 'MIKE'
+  CHLOE = 'CHLOE',
+  SAM = 'SAM'
 }
 
 export interface Message {

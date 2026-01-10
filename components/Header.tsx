@@ -1,5 +1,5 @@
 import React from 'react';
-import { Persona } from '../types.ts';
+import { Persona } from '../types';
 
 interface HeaderProps {
   persona: Persona;
@@ -7,7 +7,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
-  const isEmergency = persona === Persona.MIKE;
+  const isEmergency = persona === Persona.SAM;
 
   const scrollToSection = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
 
   const togglePersona = () => {
     if (setPersona) {
-      setPersona(isEmergency ? Persona.SARAH : Persona.MIKE);
+      setPersona(isEmergency ? Persona.CHLOE : Persona.SAM);
     }
   };
 
@@ -47,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
                 <h1 className={`text-xl font-bold uppercase tracking-tight ${isEmergency ? 'text-orange-950' : 'text-blue-900'}`}>
                   Superior <span className="text-gray-500 font-medium">Plumbing</span>
                 </h1>
-                <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold -mt-1 leading-none">Enterprise Solutions</p>
+                <p className="text-[9px] uppercase tracking-widest text-gray-400 font-bold -mt-1 leading-none">Enterprise Dispatch</p>
               </div>
             </div>
           </div>
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
               </span>
-              Mode: {isEmergency ? 'Switch to Standard' : 'Switch to Emergency'}
+              Mode: {isEmergency ? 'Standard Support' : 'Emergency Mode'}
             </button>
 
             <div className="hidden xl:flex gap-6 font-semibold text-gray-600">
@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
             </div>
 
             <div className="flex flex-col items-end">
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Emergency Line</p>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-tighter">Enterprise Hotline</p>
               <a href="tel:18669322818" className={`text-lg font-black transition-colors ${isEmergency ? 'text-orange-600' : 'text-blue-700'}`}>
                 (866) 932-2818
               </a>
@@ -80,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ persona, setPersona }) => {
               onClick={scrollToSection('book')}
               className={`hidden sm:block px-6 py-2.5 rounded-xl font-black text-white shadow-lg transition-all transform hover:scale-105 active:scale-95 ${isEmergency ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-700 hover:bg-blue-800'}`}
             >
-              BOOK NOW
+              SCHEDULE NOW
             </button>
           </div>
         </div>

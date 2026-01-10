@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Persona } from '../types';
 
@@ -9,7 +8,7 @@ interface HeroProps {
 }
 
 const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) => {
-  const isEmergency = persona === Persona.MIKE;
+  const isEmergency = persona === Persona.SAM;
 
   return (
     <section className="relative overflow-hidden rounded-[3rem] bg-white shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-slate-100">
@@ -18,16 +17,16 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center min-h-[520px]">
         <div className="p-10 md:p-20 space-y-10">
           <div className={`inline-flex items-center px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-[0.15em] mb-2 shadow-sm ${isEmergency ? 'bg-orange-600 text-white' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
-             {isEmergency ? '⚠️ PRIORITY DISPATCH ACTIVE' : '✅ 100% SATISFACTION GUARANTEE'}
+             {isEmergency ? '🚨 EMERGENCY DISPATCH ACTIVE' : '🏠 OFFICIAL REBATE PARTNER'}
           </div>
           
           {isEmergency ? (
             <>
               <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.95] tracking-tight">
-                URGENT <br/> <span className="text-orange-600">DISPATCH</span>
+                URGENT <br/> <span className="text-orange-600">RESPONSE</span>
               </h2>
               <p className="text-slate-500 text-xl leading-relaxed font-medium max-w-md">
-                Mike is routing elite technicians to your location. <strong>4-hour arrival</strong> guaranteed for no heat or flood emergencies.
+                Sam is dispatching elite technicians across the GTA. <strong>4-hour arrival</strong> guaranteed for all critical failures.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <button 
@@ -38,18 +37,18 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                       : 'bg-orange-600 text-white hover:bg-orange-700'
                   }`}
                 >
-                   <span className="text-2xl group-hover:rotate-12 transition-transform">🚨</span> 
-                   {isVoiceActive ? 'HANDING OVER TO MIKE' : 'TALK TO DISPATCH'}
+                   <span className="text-2xl group-hover:rotate-12 transition-transform">🎧</span> 
+                   {isVoiceActive ? 'SAM IS LISTENING' : 'TALK TO DISPATCH'}
                 </button>
               </div>
             </>
           ) : (
             <>
               <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.95] tracking-tight">
-                SMART <br/> <span className="text-blue-700">SOLUTIONS</span>
+                SMART <br/> <span className="text-blue-700">SAVINGS</span>
               </h2>
               <p className="text-slate-500 text-xl leading-relaxed font-medium max-w-md">
-                Speak with <strong>Sarah</strong> to schedule maintenance or verify your <strong>$7,500 Ontario HRS rebate</strong> eligibility instantly.
+                Speak with <strong>Chloe</strong> to verify your eligibility for the <strong>$7,500 Ontario HRS rebate</strong> program instantly.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
                 <button 
@@ -61,7 +60,7 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
                   }`}
                 >
                   <span className="text-2xl group-hover:scale-110 transition-transform">🎙️</span> 
-                  {isVoiceActive ? 'SARAH IS LISTENING' : 'TALK TO SARAH'}
+                  {isVoiceActive ? 'CHLOE IS LISTENING' : 'TALK TO CHLOE'}
                 </button>
               </div>
             </>
@@ -74,14 +73,14 @@ const Hero: React.FC<HeroProps> = ({ persona, onVoiceToggle, isVoiceActive }) =>
               
               {isEmergency ? (
                 <img 
-                  src="https://i.ibb.co/99vGwK1F/gpt-image-1-5-a-Create-the-following.png" 
-                  alt="Emergency Dispatcher Mike" 
+                  src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=800&h=800&auto=format&fit=crop" 
+                  alt="Emergency Dispatcher Sam" 
                   className="relative z-10 w-[420px] h-[420px] object-cover rounded-[4rem] shadow-2xl border-[12px] border-white transition-all duration-500 group-hover:scale-[1.02]"
                 />
               ) : (
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&h=800&auto=format&fit=crop" 
-                  alt="Home Advisor Sarah" 
+                  alt="Home Advisor Chloe" 
                   className="relative z-10 w-[420px] h-[420px] object-cover rounded-[4rem] shadow-2xl border-[12px] border-white transition-all duration-500 group-hover:scale-[1.02]"
                 />
               )}

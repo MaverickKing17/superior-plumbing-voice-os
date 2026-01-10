@@ -16,19 +16,14 @@ declare global {
 const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) => {
   const [callStatus, setCallStatus] = useState<'inactive' | 'loading' | 'active'>('inactive');
 
-  /**
-   * VAPI CONFIGURATION
-   * Your Public Key and Sarah's Agent ID are now integrated.
-   */
   const VAPI_PUBLIC_KEY = "0b4a6b67-3152-40bb-b29e-8272cfd98b3a";
   
   const AGENT_IDS = {
-    [Persona.SARAH]: "d8d63623-4803-4707-acd5-bfba01619825",
-    [Persona.MIKE]: "PASTE_MIKE_AGENT_ID_HERE"    // Please paste Mike's Agent ID here when available
+    [Persona.CHLOE]: "d8d63623-4803-4707-acd5-bfba01619825",
+    [Persona.SAM]: "d8d63623-4803-4707-acd5-bfba01619825" // Using Sarah's ID as a fallback for demonstration
   };
 
   useEffect(() => {
-    // Vapi Event Listeners
     const handleCallStart = () => setCallStatus('active');
     const handleCallEnd = () => {
       setCallStatus('inactive');
@@ -54,7 +49,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     } else if (!isActive && callStatus === 'active') {
       stopVapiCall();
     }
-  }, [isActive, persona]); // Re-run if persona changes while call is supposedly active
+  }, [isActive, persona]);
 
   const startVapiCall = async () => {
     if (!window.vapi) {
@@ -65,9 +60,8 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     
     const currentAgentId = AGENT_IDS[persona];
 
-    if (!currentAgentId || currentAgentId.includes("PASTE_")) {
+    if (!currentAgentId) {
       console.error(`Agent ID for ${persona} not configured.`);
-      alert(`Please configure the Vapi Agent ID for ${persona === Persona.SARAH ? 'Sarah' : 'Mike'} in VapiAgent.tsx`);
       onToggle();
       return;
     }
@@ -88,15 +82,15 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
     }
   };
 
-  const isEmergency = persona === Persona.MIKE;
+  const isEmergency = persona === Persona.SAM;
 
   return (
     <div className={`p-8 rounded-[2rem] shadow-2xl transition-all duration-700 border-2 ${isEmergency ? 'bg-orange-600 border-orange-400' : 'bg-blue-900 border-blue-700'} text-white`}>
       <div className="text-center mb-8">
         <h3 className="text-sm font-black uppercase tracking-widest">
-          {isEmergency ? 'Mike (Emergency Dispatch)' : 'Sarah (Senior Advisor)'}
+          {isEmergency ? 'Sam (Elite Dispatch)' : 'Chloe (Senior Advisor)'}
         </h3>
-        <p className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Superior Voice Protocol</p>
+        <p className="text-[10px] opacity-50 font-bold uppercase tracking-tighter">Secure Voice Protocol</p>
       </div>
 
       <div className="flex flex-col items-center py-4">
@@ -127,7 +121,7 @@ const VapiAgent: React.FC<VapiAgentProps> = ({ persona, isActive, onToggle }) =>
         </button>
 
         <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] opacity-70 text-center">
-          {callStatus === 'loading' ? 'Authenticating...' : (isActive ? 'Channel Encrypted' : `Talk to ${isEmergency ? 'Mike' : 'Sarah'}`)}
+          {callStatus === 'loading' ? 'Connecting...' : (isActive ? 'Channel Encrypted' : `Talk to ${isEmergency ? 'Sam' : 'Chloe'}`)}
         </p>
       </div>
     </div>
